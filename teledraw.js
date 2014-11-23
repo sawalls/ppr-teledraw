@@ -7,7 +7,7 @@ const GAME_CREATION_ERRORS =
 
 const ADD_PLAYER_ERRORS = 
 {
-    CANNOT_FIND_GAME_BY_NAME : 1
+    CANNOT_FIND_GAME_BY_NAME : 1,
     PLAYER_NAME_IN_USE : 2,
 };
 
@@ -96,7 +96,8 @@ function GameManager()
         else
         {
             game.threads[game.player_list[player_index].current_thread].push(submission);
-            game.player_list[player_index].current_thread++;
+            game.player_list[player_index].current_thread--;
+            game.player_list[player_index].current_thread = (game.player_list[player_index].current_thread)%(game.player_list.length);
         }
     }
 }
