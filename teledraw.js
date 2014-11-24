@@ -1,4 +1,5 @@
-var http = require("http");
+var express = require('express');
+var app = express();
 
 const GAME_CREATION_ERRORS =
 {
@@ -17,7 +18,8 @@ const SUBMISSION_ERRORS =
     CANNOT_FIND_PLAYER_NAME : 2,
 };
 
-
+const DEFAULT_HTTP_LISTEN_PORT = 80;
+const PORT_ARGUMENT_INDEX = 2;
 
 function GameManager()
 {
@@ -102,8 +104,18 @@ function GameManager()
     }
 }
 
-http.createServer(function(request, response)
-{
+var port = DEFAULT_HTTP_LISTEN_PORT;
+if (process.argv.length === PORT_ARGUMENT_INDEX + 1) {
+  port = process.argv[PORT_ARGUMENT_INDEX];
+}
 
+var server = app.listen(port, function() {
+  var host = server.address().address;
+  var port = server.address().port;
 
-}).listen(8080);
+  console.log('Created a listening port at http://%s.%s', host, port);
+});
+
+app.get('/', function(req, res) {
+  res.send('Hello world!');
+});

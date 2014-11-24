@@ -1,0 +1,15 @@
+{
+  "//": "This is a package.json file for npm",
+
+  "name": "ppr-teledraw",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Peppersoft's webapp for the game called Teledraw",
+  "contributors": [
+    "Scott Walls <sawalls@umich.edu>",
+    "Kevin Kozlowski <kevin.kozlowski@gmail.com>"
+    ],
+  "dependencies": {
+    "express": "latest"
+  }
+}
