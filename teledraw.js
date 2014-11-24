@@ -1,5 +1,5 @@
 var express = require('express');
-var app = express();
+var bodyParser = require('body-parser');
 
 const GAME_CREATION_ERRORS =
 {
@@ -109,13 +109,22 @@ if (process.argv.length === PORT_ARGUMENT_INDEX + 1) {
   port = process.argv[PORT_ARGUMENT_INDEX];
 }
 
+var app = express();
+
+app.use(bodyParser.urlencoded(true));
+
 var server = app.listen(port, function() {
   var host = server.address().address;
   var port = server.address().port;
 
-  console.log('Created a listening port at http://%s.%s', host, port);
+  console.log('Created a listening port at http://%s:%s', host, port);
 });
 
 app.get('/', function(req, res) {
-  res.send('Hello world!');
+  res.sendFile('player_game_form.html', {root: __dirname });
+});
+
+app.post('/my-handling-form-page', function(req, res) {
+  res.send('You gave game: ' + req.body.user_game_name +
+           ' and player: ' + req.body.user_player_name);
 });

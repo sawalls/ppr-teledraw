@@ -10,6 +10,7 @@
     "Kevin Kozlowski <kevin.kozlowski@gmail.com>"
     ],
   "dependencies": {
-    "express": "latest"
+    "express": "latest",
+    "body-parser": "latest"
   }
 }
