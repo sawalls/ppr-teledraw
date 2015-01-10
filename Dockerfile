@@ -1,17 +1,21 @@
 # DOCKER-VERSION 0.3.4
 
-FROM	ubuntu:latest
+# Get OS and packages
+FROM	ubuntu:14.04
 
-# Setting the DEBIAN_FRONTEND variable is required to not get prompts
-RUN	DEBIAN_FRONTEND=noninteractive \
-	/bin/bash -c 'apt-get update -y; apt-get install -y nodejs npm'
+RUN	apt-get update; apt-get install -y \
+		nodejs=0.10* \
+		npm=1.3.10*
 
-# Copy this folder (on the host machine) to /src (in the container)
-COPY	. /src
 
-# Install dependencies from package.json
-RUN cd /src; npm install
+# Get nodejs packages. It's weird to copy 1 file first, but npm install takes a
+# long time and this makes it only happen when package.json changes
+COPY	./package.json /src/
+WORKDIR /src
+RUN npm install
 
+# Copy the rest of the files over and run
 EXPOSE 80
+COPY . /src
 
-CMD ["nodejs", "/src/teledraw.js"]
+CMD ["nodejs", "teledraw.js"]
