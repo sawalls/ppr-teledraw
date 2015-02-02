@@ -11,6 +11,7 @@
     ],
   "dependencies": {
     "express": "^4.10.0",
-    "body-parser": "latest"
+    "body-parser": "latest",
+    "jade": "^1.9.1"
   }
 }
