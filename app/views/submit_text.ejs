@@ -7,12 +7,15 @@
     <body>
         <form  action="/my_submission_form_page" method="post">
             <div>
-                <p>Your clue is CLUE</p>
+                <p><%= clue %></p>
             </div>
             <div>
                 <label for="submission">Submission</label>
                 <input type="text" id="submission" name="user_submission"/>
             </div>           
+            <div class="button">
+                <button type="submit">Submit</button>
+            </div>
         </form>
     </body>
 
