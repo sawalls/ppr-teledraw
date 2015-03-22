@@ -101,6 +101,68 @@ function GameManager()
         }
     };
 
+    this.getNextClueForPlayer = function(game_name, player_name)
+    {
+        var game = d_active_games[game_name];
+        if(game === undefined)
+        {
+            console.log("Cannot find game name " + game_name);
+            return undefined;
+        }
+        var player_index = findPlayer(game.player_list, player_name);
+        if(player_index === undefined)
+        {
+            console.log("Cannot find player name " + player_name
+            return undefined;
+        }
+        var player_submission_count;
+        var current_thread_num = game.player_list[player_index].current_thread;
+        if(current_thread_num > player_index)
+        {
+            player_submission_count = player_index + game.player_list.length - current_thread_num;
+        }
+        else if(player_index > current_thread_num)
+        {
+            player_submission_count = player_index - current_thread_num;
+        }
+        else
+        {
+            console.log("Initial clue for player" + player_name);
+            return "Pick a word or phrase";
+        }
+        var current_thread = game.threads[game.player_list[player_index].current_thread];
+        if(current_thread.length < player_submission_count)
+        {
+            return undefined;
+        }
+        return current_thread[current_thread.length - 1];
+    };
+
+    this.getPreviousPlayer = function(game_name, player_name)
+    {
+        var player_submission_count;
+        var current_thread_num = game.player_list[player_index].current_thread;
+        if(current_thread_num > player_index)
+        {
+            player_submission_count = player_index + game.player_list.length - current_thread_num;
+        }
+        else if(player_index > current_thread_num)
+        {
+            player_submission_count = player_index - current_thread_num;
+        }
+        else
+        {
+            return undefined;
+        }
+        var current_thread = game.threads[game.player_list[player_index].current_thread];
+        if(current_thread.length < player_submission_count)
+        {
+            return ;
+        }
+        return current_thread[current_thread.length - 1];
+
+    };
+
     this.getGameData = function(game_name)
     {
         var game = d_active_games[game_name];
