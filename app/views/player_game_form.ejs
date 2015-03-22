@@ -4,19 +4,45 @@
         <title>Teledraw!</title>
     </head>
     <body>
-        <form action="/my-handling-form-page" method="post">
-            <div>
-                <label for="game_name">Game Name:</label>
-                <input type="text" id="game_name" name="user_game_name"/>
-            </div>
-            <div>
-                <label for="player_name">Player Name:</label>
-                <input type="text" id="player_name" name="user_player_name"/>
-            </div>
-            <div class="button">
-                <button type="submit">Submit Info</button>
-            </div>
-        </form>
+        <div id="game_list">
+	    <h1>Current games:</h1>
+	    <ul>
+            <% var printed_a_game = false; %>
+            <% for (var gameName in gameList) {%>
+                <% if (!gameList.hasOwnProperty(gameName)) { continue; } %>
+                <li><%= gameName %></li>
+                <% var printed_a_game = true; %>
+		<% var playerNames = gameList[gameName]; %>
+		<% if (playerNames.length === 0) { continue; } %>
+		<h3>Players:</h3>
+                <ul>
+                <% for (var i = 0; i < playerNames.length; i += 1) {%>
+		    <% var playerName = playerNames[i]; %>
+                    <li><%= playerName %></li>
+                <% } %>
+                </ul>
+            <% } %>
+            </ul>
+            <% if (printed_a_game === false) { %>
+                <p> No games currently going. Feel free to make your own! </p>
+            <% } %>
+	</div>
+	<div id="game_form">
+	    <h1>Join a game:</h1>
+            <form action="/my-handling-form-page" method="post">
+                <div>
+                    <label for="game_name">Game Name:</label>
+                    <input type="text" id="game_name" name="user_game_name"/>
+                </div>
+                <div>
+                    <label for="player_name">Player Name:</label>
+                    <input type="text" id="player_name" name="user_player_name"/>
+                </div>
+                <div class="button">
+                    <button type="submit">Submit Info</button>
+                </div>
+            </form>
+	</div>
     </body>
 </html>
 

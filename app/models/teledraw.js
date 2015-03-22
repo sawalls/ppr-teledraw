@@ -111,4 +111,28 @@ function GameManager()
     };
 }
 
-
+    //Arguments: none
+    //Returns: object with keys string GameName, values list of string UserNames
+    this.getGameList = function()
+    {
+      var gameList = {};
+      for (var gameName in d_active_games) {
+        if (!d_active_games.hasOwnProperty(gameName)) {
+          continue;
+        }
+        console.log("Game name: " + gameName);
+        var playerList = d_active_games[gameName].player_list;
+        console.log(playerList);
+        var playerNames = [];
+        for (var i = 0; i < playerList.length; i += 1) {
+          player = playerList[i];
+          console.log(player);
+          playerNames.push(player.name);
+        }
+        gameList[gameName] = playerNames;
+      }
+      console.log("RETURNING:");
+      console.log(gameList);
+      return gameList;
+    }
+}

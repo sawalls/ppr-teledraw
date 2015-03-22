@@ -3,7 +3,8 @@ var GameManager = require("../models/teledraw.js");
 var sessionGameManager = new GameManager;
 
 exports.renderEntryPage = function(req, res){
-    res.render("player_game_form",{});
+    var gameList = sessionGameManager.getGameList();
+    res.render("player_game_form",{gameList: gameList});
 };
 
 exports.processNewPlayerGameInfo = function(game_name, player_name){
@@ -24,4 +25,3 @@ exports.processNewPlayerGameInfo = function(game_name, player_name){
 exports.getAllGameData = function(game_name){
     return sessionGameManager.getGameData(game_name);
 };
-
