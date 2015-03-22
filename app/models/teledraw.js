@@ -100,6 +100,15 @@ function GameManager()
                 (game.player_list[player_index].current_thread)%(game.player_list.length);
         }
     }
+
+    this.getGameData = function(game_name)
+    {
+        var game = d_active_games[game_name];
+        if(game === undefined){
+            return "No such game " + game_name;
+        }
+        return JSON.stringify(game);
+    };
 }
 
 

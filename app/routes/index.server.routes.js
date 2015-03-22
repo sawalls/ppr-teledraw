@@ -27,4 +27,12 @@ module.exports = function(app){
         console.log(req.session.player_name);
         res.send(req.session.game_name + " " + req.session.player_name);
     });
+    app.get("/admin", function(req, res){
+        res.render("admin_landing");
+    });
+    app.post("/admin_get_game_data", function(req, res){
+        console.log("Get game data");
+        console.log(req.param("game_name"));
+        res.send(player_game.getAllGameData(req.param("game_name")));
+    });
 };

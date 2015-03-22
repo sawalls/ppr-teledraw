@@ -19,5 +19,9 @@ exports.processNewPlayerGameInfo = function(game_name, player_name){
         console.log("Player name " + player_name + " is in use");
     }
     return rc;
-}
+};
+
+exports.getAllGameData = function(game_name){
+    return sessionGameManager.getGameData(game_name);
+};
 
