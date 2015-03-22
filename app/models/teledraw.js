@@ -52,7 +52,7 @@ function GameManager()
         {
             return GAME_CREATION_ERRORS.GAME_NAME_IN_USE;
         }
-    }
+    };
 
     this.addPlayerToGame = function(player_name, game_name)
     {
@@ -78,7 +78,7 @@ function GameManager()
                 return 0;
             }
         }
-    }
+    };
 
     this.submitEntryForPlayer = function(game_name, player_name, submission)
     {
@@ -99,7 +99,7 @@ function GameManager()
             game.player_list[player_index].current_thread = 
                 (game.player_list[player_index].current_thread)%(game.player_list.length);
         }
-    }
+    };
 
     this.getGameData = function(game_name)
     {
@@ -109,7 +109,6 @@ function GameManager()
         }
         return JSON.stringify(game);
     };
-}
 
     //Arguments: none
     //Returns: object with keys string GameName, values list of string UserNames
@@ -134,5 +133,5 @@ function GameManager()
       console.log("RETURNING:");
       console.log(gameList);
       return gameList;
-    }
+    };
 }
