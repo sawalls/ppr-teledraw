@@ -22,6 +22,22 @@ exports.processNewPlayerGameInfo = function(game_name, player_name){
     return rc;
 };
 
+exports.submitEntry = function(game_name, player_name, submission) {
+    //TODO swalls check this return code
+    var rc = sessionGameManager.submitEntryForPlayer(game_name, player_name, submission);
+    return rc;
+};
+
+exports.getNextPrompt = function(game_name, player_name) {
+  var nextPrompt = sessionGameManager.getNextClueForPlayer(game_name, player_name);
+  return nextPrompt;
+};
+
+exports.getPreviousPlayer = function(game_name, player_name) {
+  var rv = sessionGameManager.getPreviousPlayer(game_name, player_name);
+  return rv;
+};
+
 exports.getAllGameData = function(game_name){
     return sessionGameManager.getGameData(game_name);
 };

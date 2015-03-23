@@ -94,10 +94,11 @@ function GameManager()
         }
         else
         {
-            game.threads[game.player_list[player_index].current_thread].push(submission);
-            game.player_list[player_index].current_thread--;
-            game.player_list[player_index].current_thread = 
-                (game.player_list[player_index].current_thread)%(game.player_list.length);
+            console.log("Pushing submission: " + submission);
+            var thread_index = game.player_list[player_index].current_thread;
+            game.threads[thread_index].push(submission);
+            thread_index = (thread_index + game.player_list.length - 1) % game.player_list.length;
+            game.player_list[player_index].current_thread = thread_index;
         }
     };
 
