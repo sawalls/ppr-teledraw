@@ -155,9 +155,9 @@ function GameManager()
 
         var player_index = findPlayer(game.player_list, player_name);
         if(player_index === 0){
-            return game.player_list.length - 1;
+            return game.player_list[game.player_list.length - 1].name;
         }
-        return game.player_list[player_index - 1];
+        return game.player_list[player_index - 1].name;
     };
 
     this.getGameData = function(game_name)
