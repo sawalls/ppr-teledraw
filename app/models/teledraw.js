@@ -73,6 +73,7 @@ function GameManager()
                     {
                         name : player_name,
                         current_thread : insertion_index,
+                        has_seen_prompt : false
                     });
                 d_active_games[game_name].threads.push([]);//Need an empty thread for each player
                 return 0;
@@ -95,26 +96,35 @@ function GameManager()
         else
         {
             console.log("Attempting to push submission: " + submission);
-            var thread_index = game.player_list[player_index].current_thread;
+            var current_player = game.player_list[player_index];
+            var thread_index = current_player.current_thread;
             var correct_index = (game.player_list.length - thread_index + player_index) %
               game.player_list.length;
             var current_thread = game.threads[thread_index];
             if (current_thread.length !== correct_index) {
-              console.log(game.player_list[player_index].name +
+              console.log(current_player.name +
                           "seemed to double-submit, correct_index is: " +
                           correct_index + " but thread length is: " +
                           current_thread.length);
               return;
             }
-            //indices check out, actually submitting
+            if (!current_player.has_seen_prompt) {
+              console.log(current_player.name + "seemed to double-submit, " +
+                  "without having seen a prompt. Disallowing.");
+              return;
+            }
+            //Everything checks out, actually submitting
             game.threads[thread_index].push(submission);
             thread_index = (thread_index + game.player_list.length - 1) % game.player_list.length;
-            game.player_list[player_index].current_thread = thread_index;
+            current_player.current_thread = thread_index;
+            current_player.has_seen_prompt = false;
         }
     };
 
     this.getNextClueForPlayer = function(game_name, player_name)
     {
+        var nextClue = "";
+
         var game = d_active_games[game_name];
         if(game === undefined)
         {
@@ -140,14 +150,18 @@ function GameManager()
         else
         {
             console.log("Initial clue for player" + player_name);
-            return "Pick a word or phrase";
+            nextClue = "Pick a word or phrase";
         }
         var current_thread = game.threads[game.player_list[player_index].current_thread];
         if(current_thread.length < player_submission_count)
         {
             return undefined;
         }
-        return current_thread[current_thread.length - 1];
+        nextClue = current_thread[current_thread.length - 1];
+
+        game.player_list[player_index].has_seen_prompt = true;
+
+        return nextClue;
     };
 
     this.getPreviousPlayer = function(game_name, player_name)
