@@ -94,8 +94,19 @@ function GameManager()
         }
         else
         {
-            console.log("Pushing submission: " + submission);
+            console.log("Attempting to push submission: " + submission);
             var thread_index = game.player_list[player_index].current_thread;
+            var correct_index = (game.player_list.length - thread_index + player_index) %
+              game.player_list.length;
+            var current_thread = game.threads[thread_index];
+            if (current_thread.length !== correct_index) {
+              console.log(game.player_list[player_index].name +
+                          "seemed to double-submit, correct_index is: " +
+                          correct_index + " but thread length is: " +
+                          current_thread.length);
+              return;
+            }
+            //indices check out, actually submitting
             game.threads[thread_index].push(submission);
             thread_index = (thread_index + game.player_list.length - 1) % game.player_list.length;
             game.player_list[player_index].current_thread = thread_index;
