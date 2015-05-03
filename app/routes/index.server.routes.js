@@ -31,7 +31,10 @@ module.exports = function(app){
         var player_name = req.session.player_name;
         console.log(game_name);
         console.log(player_name);
-        var rc = player_game.submitEntry(game_name, player_name, submission);
+        var rc = player_game.submitEntry(game_name, player_name,
+                                          {thread_index : thread_index,
+                                           submission_index : submission_index,
+                                           submission : submission});
         //TODO sawalls: check this return code :D
 
         //Now await your next prompt

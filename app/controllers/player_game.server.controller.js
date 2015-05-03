@@ -23,9 +23,9 @@ exports.processNewPlayerGameInfo = function(game_name, player_name){
     return obj;
 };
 
-exports.submitEntry = function(game_name, player_name, submission) {
+exports.submitEntry = function(game_name, player_name, submission_info) {
     //TODO swalls check this return code
-    var rc = sessionGameManager.submitEntryForPlayer(game_name, player_name, submission);
+    var rc = sessionGameManager.submitEntryForPlayer(game_name, player_name, submission_info);
     return rc;
 };
 

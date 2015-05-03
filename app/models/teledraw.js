@@ -80,9 +80,9 @@ function GameManager()
         }
     };
 
-    this.submitEntryForPlayer = function(game_name, player_name, submission)
+    this.submitEntryForPlayer = function(game_name, player_name, submission_info)
     {
-        console.log("submitting: " + game_name + " - " + player_name + " - " + submission);
+        console.log("submitting: " + game_name + " - " + player_name + " - " + JSON.stringify(submission_info));
         var game = d_active_games[game_name];
         if(game === undefined)
         {
@@ -95,10 +95,21 @@ function GameManager()
         }
         else
         {
-            console.log("Attempting to push submission: " + submission);
             var current_player = game.player_list[player_index];
             var thread_index = current_player.current_thread;
-            game.threads[thread_index].push(submission);
+            var submission_index = game.threads[thread_index].length;
+            if (thread_index !== submission_info.thread_index ||
+                submission_index !== submission_info.submission_index)
+            {
+              console.log("DOUBLE-POST DETECTED!");
+              console.log("Player: " + current_player.name + " gave bad " +
+                          "submission info: EXP thread_index: " + thread_index +
+                          ", GOT thread_index: " + submission_info.thread_index +
+                          ", EXP submission_index: " + submission_index +
+                          ", GOT submission_index: " + submission_info.submission_index);
+              return;
+            }
+            game.threads[thread_index].push(submission_info.submission);
             thread_index = (thread_index + game.player_list.length - 1) % game.player_list.length;
             current_player.current_thread = thread_index;
             console.log("New thread index" + current_player.current_thread);
