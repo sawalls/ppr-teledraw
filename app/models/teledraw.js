@@ -73,7 +73,6 @@ function GameManager()
                     {
                         name : player_name,
                         current_thread : insertion_index,
-                        has_seen_prompt : false
                     });
                 d_active_games[game_name].threads.push([]);//Need an empty thread for each player
                 return {rc : 0, player_index : insertion_index};
@@ -83,6 +82,7 @@ function GameManager()
 
     this.submitEntryForPlayer = function(game_name, player_name, submission)
     {
+        console.log("submitting: " + game_name + " - " + player_name + " - " + submission);
         var game = d_active_games[game_name];
         if(game === undefined)
         {
@@ -98,26 +98,10 @@ function GameManager()
             console.log("Attempting to push submission: " + submission);
             var current_player = game.player_list[player_index];
             var thread_index = current_player.current_thread;
-            var correct_index = (game.player_list.length - thread_index + player_index) %
-              game.player_list.length;
-            var current_thread = game.threads[thread_index];
-            if (current_thread.length !== correct_index) {
-              console.log(current_player.name +
-                          "seemed to double-submit, correct_index is: " +
-                          correct_index + " but thread length is: " +
-                          current_thread.length);
-              return;
-            }
-            if (!current_player.has_seen_prompt) {
-              console.log(current_player.name + "seemed to double-submit, " +
-                  "without having seen a prompt. Disallowing.");
-              return;
-            }
-            //Everything checks out, actually submitting
             game.threads[thread_index].push(submission);
             thread_index = (thread_index + game.player_list.length - 1) % game.player_list.length;
             current_player.current_thread = thread_index;
-            current_player.has_seen_prompt = false;
+            console.log("New thread index" + current_player.current_thread);
         }
     };
 
@@ -159,8 +143,6 @@ function GameManager()
             return undefined;
         }
         nextClue = current_thread[current_thread.length - 1];
-
-        game.player_list[player_index].has_seen_prompt = true;
 
         return {clue : nextClue, thread_index : thread_index, submission_index : current_thread.length};
     };
