@@ -161,7 +161,7 @@ function GameManager()
 
         game.player_list[player_index].has_seen_prompt = true;
 
-        return nextClue;
+        return {clue : nextClue, submission_index : current_thread.length};
     };
 
     this.getPreviousPlayer = function(game_name, player_name)

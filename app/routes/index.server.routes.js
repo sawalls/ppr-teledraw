@@ -20,12 +20,16 @@ module.exports = function(app){
         req.session.player_name = player_name;
         res.render("submit_text", {game_name : game_name,
                                     player_name : player_name,
-                                    clue : "Think of a word or phrase!"});
+                                    clue : "Think of a word or phrase!",
+                                    submission_index : 0});
     });
     app.post("/my_submission_form_page", function(req, res){
         // Process the request to submit the POST data!
         var submission = req.param("user_submission");
-        console.log("Params: " + req.params);
+        var previous_clue = req.param("clue");
+        var submission_index = req.param("submission_index");
+        console.log("Params: " + previous_clue + "\n" 
+            + submission + "\n" + submission_index);
         var game_name = req.session.game_name;
         var player_name = req.session.player_name;
         console.log(game_name);
@@ -46,7 +50,8 @@ module.exports = function(app){
         } else {
           res.render("submit_text", {game_name : game_name,
                                      player_name : player_name,
-                                     clue : nextPrompt});
+                                     clue : nextPrompt.clue,
+                                     submission_index : nextPrompt.submission_index});
         }
     });
     app.get("/admin", function(req, res){

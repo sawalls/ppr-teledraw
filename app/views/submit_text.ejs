@@ -7,12 +7,14 @@
     <body>
         <h1>You are in game: "<%= game_name %>" as player "<%= player_name %>"</h1>
         <form  action="/my_submission_form_page" method="post">
+            <input type="hidden" name="clue" value=<%= clue %>>
+            <input type="hidden" name="submission_index" value=<%= submission_index %>>
             <div>
                 <p><%= clue %></p>
             </div>
             <div>
                 <label for="submission">Submission</label>
-                <input type="text" id="submission" name="user_submission"/>
+                <input type="text" id="submission" name="user_submission">
             </div>           
             <div class="button">
                 <button type="submit">Submit</button>
