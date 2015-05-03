@@ -121,30 +121,35 @@ function GameManager()
             console.log("Cannot find player name " + player_name);
             return undefined;
         }
-        var player_submission_count;
-        var current_thread_num = game.player_list[player_index].current_thread;
-        if(current_thread_num > player_index)
+        //The number of submissions this player has made so far
+        //It is also the index that the player is about to submit
+        var thread_index = game.player_list[player_index].current_thread;
+        var player_submission_count = (player_index + game.player_list.length - thread_index)
+                                        % game.player_list.length;
+
+        var current_thread = game.threads[thread_index];
+        if (current_thread.length < player_submission_count)
         {
-            player_submission_count = player_index + game.player_list.length - current_thread_num;
-        }
-        else if(player_index > current_thread_num)
+            console.log("Not terribly out of the ordinary. Someone's too fast.");
+            return undefined;
+        } else if (current_thread.length > player_submission_count)
         {
-            player_submission_count = player_index - current_thread_num;
+            console.log("ASSERTION ERROR. Somehow the player would be "
+                        + "submitting to the middle of the thread");
+            return undefined;
         }
-        else
+
+        if(player_submission_count === 0)
         {
             console.log("Initial clue for player" + player_name);
             nextClue = "Pick a word or phrase";
         }
-        var thread_index = game.player_list[player_index].current_thread;
-        var current_thread = game.threads[thread_index];
-        if(current_thread.length < player_submission_count)
+        else
         {
-            return undefined;
+            nextClue = current_thread[player_submission_count - 1];
         }
-        nextClue = current_thread[current_thread.length - 1];
 
-        return {clue : nextClue, thread_index : thread_index, submission_index : current_thread.length};
+        return {clue : nextClue, thread_index : thread_index, submission_index : player_submission_count};
     };
 
     this.getPreviousPlayer = function(game_name, player_name)

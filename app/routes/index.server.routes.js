@@ -16,14 +16,7 @@ module.exports = function(app){
         else if(rc === 2){
             //Player name in use
         }
-        //Set player session info
-        req.session.game_name = game_name;
-        req.session.player_name = player_name;
-        res.render("submit_text", {game_name : game_name,
-                                    player_name : player_name,
-                                    clue : "Think of a word or phrase!",
-                                    thread_index : obj.player_index,
-                                    submission_index : 0});
+        res.redirect("/next_prompt");
     });
     app.post("/my_submission_form_page", function(req, res){
         // Process the request to submit the POST data!
