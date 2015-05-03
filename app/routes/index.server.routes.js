@@ -16,6 +16,8 @@ module.exports = function(app){
         else if(rc === 2){
             //Player name in use
         }
+        req.session.game_name = game_name;
+        req.session.player_name = player_name;
         res.redirect("/next_prompt");
     });
     app.post("/my_submission_form_page", function(req, res){
