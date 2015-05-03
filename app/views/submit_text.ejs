@@ -7,7 +7,7 @@
     <body>
         <h1>You are in game: "<%= game_name %>" as player "<%= player_name %>"</h1>
         <form  action="/my_submission_form_page" method="post">
-            <input type="hidden" name="clue" value="<%= clue %>">
+            <input type="hidden" name="thread_index" value="<%= thread_index %>">
             <input type="hidden" name="submission_index" value="<%= submission_index %>">
             <div>
                 <p><%= clue %></p>

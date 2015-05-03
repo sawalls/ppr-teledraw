@@ -12,14 +12,15 @@ exports.processNewPlayerGameInfo = function(game_name, player_name){
     if(rc === 1){
         console.log("Game name already in use");
     }
-    rc = sessionGameManager.addPlayerToGame(player_name, game_name);
+    var obj = sessionGameManager.addPlayerToGame(player_name, game_name);
+    var rc = obj.rc;
     if(rc === 1){
         console.log("Cannot find game: " + game_name);
     }
     else if(rc === 2){
         console.log("Player name " + player_name + " is in use");
     }
-    return rc;
+    return obj;
 };
 
 exports.submitEntry = function(game_name, player_name, submission) {

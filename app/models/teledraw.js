@@ -58,13 +58,13 @@ function GameManager()
     {
         if(d_active_games[game_name] === undefined)
         {
-            return ADD_PLAYER_ERRORS.CANNOT_FIND_GAME_BY_NAME;
+            return {rc : ADD_PLAYER_ERRORS.CANNOT_FIND_GAME_BY_NAME};
         }
         else
         {
             if(findPlayer(d_active_games[game_name].player_list, player_name) !== undefined)
             {
-                return ADD_PLAYER_ERRORS.PLAYER_NAME_IN_USE;
+                return {rc : ADD_PLAYER_ERRORS.PLAYER_NAME_IN_USE};
             }
             else
             {
@@ -76,7 +76,7 @@ function GameManager()
                         has_seen_prompt : false
                     });
                 d_active_games[game_name].threads.push([]);//Need an empty thread for each player
-                return 0;
+                return {rc : 0, player_index : insertion_index};
             }
         }
     };
@@ -152,7 +152,8 @@ function GameManager()
             console.log("Initial clue for player" + player_name);
             nextClue = "Pick a word or phrase";
         }
-        var current_thread = game.threads[game.player_list[player_index].current_thread];
+        var thread_index = game.player_list[player_index].current_thread;
+        var current_thread = game.threads[thread_index];
         if(current_thread.length < player_submission_count)
         {
             return undefined;
@@ -161,7 +162,7 @@ function GameManager()
 
         game.player_list[player_index].has_seen_prompt = true;
 
-        return {clue : nextClue, submission_index : current_thread.length};
+        return {clue : nextClue, thread_index : thread_index, submission_index : current_thread.length};
     };
 
     this.getPreviousPlayer = function(game_name, player_name)

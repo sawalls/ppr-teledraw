@@ -8,7 +8,8 @@ module.exports = function(app){
         var player_name = req.param("user_player_name");
         console.log(game_name);
         console.log(player_name);
-        var rc = player_game.processNewPlayerGameInfo(game_name, player_name);
+        var obj = player_game.processNewPlayerGameInfo(game_name, player_name);
+        var rc = obj.rc;
         if(rc === 1){
             //Cannot find game and failed to create
         }
@@ -21,14 +22,15 @@ module.exports = function(app){
         res.render("submit_text", {game_name : game_name,
                                     player_name : player_name,
                                     clue : "Think of a word or phrase!",
+                                    thread_index : obj.player_index,
                                     submission_index : 0});
     });
     app.post("/my_submission_form_page", function(req, res){
         // Process the request to submit the POST data!
         var submission = req.param("user_submission");
-        var previous_clue = req.param("clue");
+        var thread_index = req.param("thread_index");
         var submission_index = req.param("submission_index");
-        console.log("Params: " + previous_clue + "\n" 
+        console.log("Params: " + thread_index + "\n" 
             + submission + "\n" + submission_index);
         var game_name = req.session.game_name;
         var player_name = req.session.player_name;
@@ -51,6 +53,7 @@ module.exports = function(app){
           res.render("submit_text", {game_name : game_name,
                                      player_name : player_name,
                                      clue : nextPrompt.clue,
+                                     thread_index : nextPrompt.thread_index,
                                      submission_index : nextPrompt.submission_index});
         }
     });
