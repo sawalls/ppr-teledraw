@@ -116,6 +116,14 @@ function GameManager()
         }
     };
 
+    // returns undefined on an unrecoverable error
+    // Otherwise, returns an object with a "has_clue" property whose value is a
+    // boolean. If "has_clue" is true, the returned object will also have the
+    // properties: "clue", "thread_index", and "submission_index".
+    // If "has_clue" is false, it means the player had no next clue. Then there
+    // will be a "finished" property, also a boolean. This will be true if
+    // the player is totally done with every thread or false if the player
+    // was just a little too fast in answering.
     this.getNextClueForPlayer = function(game_name, player_name)
     {
         var nextClue = "";
@@ -142,7 +150,7 @@ function GameManager()
         if (current_thread.length < player_submission_count)
         {
             console.log("Not terribly out of the ordinary. Someone's too fast.");
-            return undefined;
+            return {has_clue : false, finished : false};
         } else if (current_thread.length > player_submission_count)
         {
             console.log("ASSERTION ERROR. Somehow the player would be "
@@ -150,17 +158,25 @@ function GameManager()
             return undefined;
         }
 
-        if(player_submission_count === 0)
+        if (player_submission_count === 0)
         {
-            console.log("Initial clue for player" + player_name);
-            nextClue = "Pick a word or phrase";
+            if (current_thread.length === 0) {
+                console.log("Initial clue for player" + player_name);
+                nextClue = "Pick a word or phrase";
+            } else {
+                console.log("Player " + player_name + " is totally done!");
+                return {has_clue : false, finished : true};
+            }
         }
         else
         {
             nextClue = current_thread[player_submission_count - 1];
         }
 
-        return {clue : nextClue, thread_index : thread_index, submission_index : player_submission_count};
+        return {has_clue : true,
+                clue : nextClue,
+                thread_index : thread_index,
+                submission_index : player_submission_count};
     };
 
     this.getPreviousPlayer = function(game_name, player_name)

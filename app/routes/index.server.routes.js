@@ -44,15 +44,22 @@ module.exports = function(app){
         var game_name = req.session.game_name;
         var player_name = req.session.player_name;
         var nextPrompt = player_game.getNextPrompt(game_name, player_name);
-        if (nextPrompt === undefined) {
-          var prevPlayerName = player_game.getPreviousPlayer(game_name, player_name);
-          res.render("please_wait", {prev_player_name: prevPlayerName});
-        } else {
+        if (promptInfo === undefined) {
+          //TODO: do something about unrecoverable error
+        } else if (promptInfo.has_clue === true) {
           res.render("submit_text", {game_name : game_name,
                                      player_name : player_name,
-                                     clue : nextPrompt.clue,
-                                     thread_index : nextPrompt.thread_index,
-                                     submission_index : nextPrompt.submission_index});
+                                     clue : promptInfo.clue,
+                                     thread_index : promptInfo.thread_index,
+                                     submission_index : promptInfo.submission_index});
+        } else {
+          if (promptInfo.finished === true) {
+            res.render("finished", {game_name : game_name,
+                                    player_name : player_name});
+          } else {
+            var prevPlayerName = player_game.getPreviousPlayer(game_name, player_name);
+            res.render("please_wait", {prev_player_name: prevPlayerName});
+          }
         }
     });
     app.get("/admin", function(req, res){
