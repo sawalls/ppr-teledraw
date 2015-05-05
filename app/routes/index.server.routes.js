@@ -43,7 +43,7 @@ module.exports = function(app){
     app.get("/next_prompt", function(req, res) {
         var game_name = req.session.game_name;
         var player_name = req.session.player_name;
-        var nextPrompt = player_game.getNextPrompt(game_name, player_name);
+        var promptInfo = player_game.getNextPrompt(game_name, player_name);
         if (promptInfo === undefined) {
           //TODO: do something about unrecoverable error
         } else if (promptInfo.has_clue === true) {
