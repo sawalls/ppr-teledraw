@@ -152,7 +152,7 @@ function GameManager()
             console.log("Not terribly out of the ordinary. Someone's too fast.");
             return {has_clue : false, finished : false};
         } else if (current_thread.length > player_submission_count &&
-                   current_thread.length !== game.player_list.length)
+                   player_submission_count !== 0)
         {
             console.log("ASSERTION ERROR. Somehow the player would be "
                         + "submitting to the middle of the thread");
