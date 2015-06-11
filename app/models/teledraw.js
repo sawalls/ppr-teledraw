@@ -103,7 +103,7 @@ function GameManager()
             if(current_player.mailbox.isEmpty())
             {
                 console.log("Player " + player_name + " submitted to chain "
-                        + chainName + "but there's no chain to submit to!"
+                        + chainName + "but there's no chain to submit to!");
                 return;
             }
             intendedChainNameForSubmission = submission_info.chainName;

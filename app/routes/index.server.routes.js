@@ -23,7 +23,7 @@ module.exports = function(app){
     app.post("/my_submission_form_page", function(req, res){
         // Process the request to submit the POST data!
         var submission = req.param("user_submission");
-        var chainName = req.param("chainName"));
+        var chainName = req.param("chainName");
         console.log("Params: " + chainName);
         var game_name = req.session.game_name;
         var player_name = req.session.player_name;
