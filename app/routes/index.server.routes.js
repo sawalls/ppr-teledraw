@@ -23,17 +23,14 @@ module.exports = function(app){
     app.post("/my_submission_form_page", function(req, res){
         // Process the request to submit the POST data!
         var submission = req.param("user_submission");
-        var thread_index = parseInt(req.param("thread_index"));
-        var submission_index = parseInt(req.param("submission_index"));
-        console.log("Params: " + thread_index + "\n" 
-            + submission + "\n" + submission_index);
+        var chainName = req.param("chainName"));
+        console.log("Params: " + chainName);
         var game_name = req.session.game_name;
         var player_name = req.session.player_name;
         console.log(game_name);
         console.log(player_name);
         var rc = player_game.submitEntry(game_name, player_name,
-                                          {thread_index : thread_index,
-                                           submission_index : submission_index,
+                                          {chainName : chainName,
                                            submission : submission});
         //TODO sawalls: check this return code :D
 
@@ -50,8 +47,7 @@ module.exports = function(app){
           res.render("submit_text", {game_name : game_name,
                                      player_name : player_name,
                                      clue : promptInfo.clue,
-                                     thread_index : promptInfo.thread_index,
-                                     submission_index : promptInfo.submission_index});
+                                     chainName : promptInfo.chainName});
         } else {
           if (promptInfo.finished === true) {
             res.render("finished", {game_name : game_name,
