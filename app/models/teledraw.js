@@ -73,11 +73,13 @@ function GameManager()
                 var mailbox = new Mailbox(player_name + "'s mailbox");
                 var initialChain = new Chain(player_name + "'s chain");
                 mailbox.addItem(initialChain);
+                console.log(mailbox.getName());
                 d_active_games[game_name].player_list.push(
                     {
                         name : player_name,
                         mailbox : mailbox,
                     });
+                console.log(JSON.stringify(d_active_games[game_name].player_list.mailbox.getName()));
                 return {rc : 0};
             }
         }
@@ -145,7 +147,7 @@ function GameManager()
         else{
             var currentChain = player.mailbox.getFrontItem();
             var nextClue = "";
-            if(currentChain.submissionCount === 0){
+            if(currentChain.submissionCount() === 0){
                 //First submission
                 nextClue = "Pick a word or phrase";
             }

@@ -25,4 +25,5 @@ function Mailbox(mailboxName)
         var frontElt = mailQueue.splice(0,1)[0];
         return frontElt;
     }
+    this.getName = function(){return mailboxName;};
 }
