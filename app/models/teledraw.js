@@ -19,6 +19,13 @@ const SUBMISSION_ERRORS =
 {
     CANNOT_FIND_GAME_BY_NAME : 1,
     CANNOT_FIND_PLAYER_NAME : 2,
+    MAILBOX_IS_EMPTY : 3,
+    ATTEMPT_TO_SUBMIT_TO_WRONG_CHAIN : 4
+};
+
+const START_GAME_ERRORS = 
+{
+    CANNOT_FIND_GAME_BY_NAME : 1,
 };
 
 function GameManager()
@@ -47,6 +54,7 @@ function GameManager()
             d_active_games[game_name] = 
             {
                 player_list : [],
+                has_started : false
             };
             return 0;
         }
@@ -70,34 +78,53 @@ function GameManager()
             }
             else
             {
-                var mailbox = new Mailbox(player_name + "'s mailbox");
-                var initialChain = new Chain(player_name + "'s chain");
-                mailbox.addItem(initialChain);
-                console.log(mailbox.getName());
+//                var mailbox = new Mailbox(player_name + "'s mailbox");
+//                var initialChain = new Chain(player_name + "'s chain");
+//                mailbox.addItem(initialChain);
                 d_active_games[game_name].player_list.push(
                     {
                         name : player_name,
-                        mailbox : mailbox,
                     });
-                console.log(JSON.stringify(d_active_games[game_name].player_list.mailbox.getName()));
                 return {rc : 0};
             }
         }
     };
+
+    this.startGame = function(game_name)
+    {
+        if(d_active_games[game_name] === undefined)
+        {
+            return START_GAME_ERRORS.CANNOT_FIND_GAME_BY_NAME;
+        }
+        d_active_games[game_name].has_started = true;
+        for(var i = 0, player; 
+            player = d_active_games[game_name].player_list[i++];)
+        {
+            var mailbox = new Mailbox(player.name + "'s mailbox");
+            var initialChain = new Chain(player.name + "'s chain", 
+                    d_active_games[game_name].player_list.length);
+            mailbox.addItem(initialChain);
+            player.mailbox = mailbox;
+        }
+        return 0;
+    }
 
     this.submitEntryForPlayer = function(game_name, player_name, submission_info)
     {
         console.log("submitting: " + game_name + " - " + player_name 
                 + " - " + JSON.stringify(submission_info));
         var game = d_active_games[game_name];
+        var retObj = {rc : 0, chainCompleted: false};
         if(game === undefined)
         {
-            return SUBMISSION_ERRORS.CANNOT_FIND_GAME_BY_NAME;
+            retObj.rc = SUBMISSION_ERRORS.CANNOT_FIND_GAME_BY_NAME;
+            return retObj;
         }
         var player_index = findPlayer(game.player_list, player_name);
         if(player_index === undefined)
         {
-            return SUBMISSION_ERRORS.CANNOT_FIND_PLAYER_NAME;
+            retObj.rc = SUBMISSION_ERRORS.CANNOT_FIND_PLAYER_NAME;
+            return retObj;
         }
         else
         {
@@ -106,19 +133,25 @@ function GameManager()
             {
                 console.log("Player " + player_name + " submitted to chain "
                         + chainName + "but there's no chain to submit to!");
-                return;
+                retObj.rc = SUBMISSION_ERRORS.MAILBOX_IS_EMPTY;
+                return retObj;
             }
             intendedChainNameForSubmission = submission_info.chainName;
             if(intendedChainNameForSubmission !== current_player.mailbox.getFrontItem().getName()){
                 console.log("Player " + player_name + " tried to submit to chain "
                     + current_player.mailbox.getFrontItem().getName()
                     + " but they thought it was chain " + intendedChainNameForSubmission);
-                return;
+                retObj.rc = SUBMISSION_ERRORS.ATTEMPT_TO_SUBMIT_TO_WRONG_CHAIN;
+                return retObj;
             }
             current_chain = current_player.mailbox.popFrontItem();
             current_chain.addSubmission(player_name, submission_info.submission);
-            next_player = game.player_list[player_index + 1];
+            if(current_chain.isComplete()){
+                retObj.chainCompleted= true;
+            }
+            next_player = game.player_list[(player_index + 1)%game.player_list.length];
             next_player.mailbox.addItem(current_chain);
+            return retObj;
         }
     };
 
@@ -157,11 +190,12 @@ function GameManager()
                 return {has_clue : false, finished : true};
             }
             else{
-                nextClue = currentChain.getLastSubmission();
+                nextClue = currentChain.getLastSubmission().content;
             }
             return {has_clue : true,
                     clue : nextClue,
-                    chainName : currentChain.getName()};
+                    chainName : currentChain.getName(),
+                    finished : false};
         }
     };
 
@@ -187,13 +221,15 @@ function GameManager()
         return game.player_list[player_index - 1].name;
     };
 
-    this.getGameData = function(game_name)
-    {
+
+    this.gameHasStarted = function(game_name){
         var game = d_active_games[game_name];
         if(game === undefined){
-            return "No such game " + game_name;
+            console.log("Requested start status of nonexistent game " 
+                    + game_name);
+            return false;
         }
-        return JSON.stringify(game);
+        return game.has_started;
     };
 
     //Arguments: none
@@ -220,4 +256,25 @@ function GameManager()
       console.log(gameList);
       return gameList;
     };
+
+    this.getGameData = function(game_name)
+    {
+        var game = d_active_games[game_name];
+        if(game === undefined){
+            return "No such game " + game_name;
+        }
+        var formattedResults = "";
+        var player_list = game.player_list;
+        if(player_list.length === 0){
+            return "No players in game " + game_name;
+        }
+        formattedResults += player_list[0].mailbox.getFrontItem().getFormattedChainString();
+
+        for(var i = 1, player; player = player_list[i++];)
+        {
+            formattedResults += "\n" + player.mailbox.getFrontItem().getFormattedChainString();
+        }
+        return formattedResults;
+    };
 }
+

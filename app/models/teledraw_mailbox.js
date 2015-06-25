@@ -15,6 +15,7 @@ function Mailbox(mailboxName)
             console.log("Tried to get the front item from an empty mailbox " + mailboxName);
             return undefined;
         }
+        return mailQueue[0];
     }
     this.popFrontItem = function()
     {
@@ -27,3 +28,4 @@ function Mailbox(mailboxName)
     }
     this.getName = function(){return mailboxName;};
 }
+

@@ -9,10 +9,15 @@ exports.renderEntryPage = function(req, res){
 
 exports.processNewPlayerGameInfo = function(game_name, player_name){
     var rc = sessionGameManager.createGame(game_name);
+    var player_is_first = false;
     if(rc === 1){
         console.log("Game name already in use");
     }
+    else{
+        player_is_first = true;
+    }
     var obj = sessionGameManager.addPlayerToGame(player_name, game_name);
+    obj.player_is_first = player_is_first;
     var rc = obj.rc;
     if(rc === 1){
         console.log("Cannot find game: " + game_name);
@@ -25,8 +30,8 @@ exports.processNewPlayerGameInfo = function(game_name, player_name){
 
 exports.submitEntry = function(game_name, player_name, submission_info) {
     //TODO swalls check this return code
-    var rc = sessionGameManager.submitEntryForPlayer(game_name, player_name, submission_info);
-    return rc;
+    var obj = sessionGameManager.submitEntryForPlayer(game_name, player_name, submission_info);
+    return obj;
 };
 
 exports.getNextPrompt = function(game_name, player_name) {
@@ -41,4 +46,12 @@ exports.getPreviousPlayer = function(game_name, player_name) {
 
 exports.getAllGameData = function(game_name){
     return sessionGameManager.getGameData(game_name);
+};
+
+exports.startGame = function(game_name){
+    return sessionGameManager.startGame(game_name);
+};
+
+exports.gameHasStarted = function(game_name){
+    return sessionGameManager.gameHasStarted(game_name);
 };

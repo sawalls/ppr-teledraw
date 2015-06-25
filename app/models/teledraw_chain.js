@@ -29,4 +29,12 @@ function Chain(chainName, maxChainLength)
     this.getName = function(){
         return chainName;
     };
+    this.getFormattedChainString = function(){
+        var formattedChain = chainName + " \n";
+        for(var i = 0, sub; sub = submissions[i++];)
+        {
+            formattedChain += sub.author + ": " + sub.content + "\n";
+        }
+        return formattedChain;
+    };
 }
