@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head><title>Lobby</title></head>
+    <body>
+        <div>
+        <p>Let's all go to the Lobby!</p>
+        <p>Please wait here until the leader starts the game.</p>
+        </div>
+        <% if(player_is_first) {%>
+        <form action="/start_game" method="post">
+        <div class="button">
+            <button type="submit">START THE GAME</button>
+        </div>
+        </form>
+        <% } %>
+    </body>
+</html>

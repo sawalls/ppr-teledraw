@@ -1,6 +1,9 @@
 
 module.exports = GameManager;
 
+var Chain = require('./teledraw_chain.js');
+var Mailbox = require('./teledraw_mailbox.js');
+
 const GAME_CREATION_ERRORS =
 {
     GAME_NAME_IN_USE : 1,
@@ -16,6 +19,13 @@ const SUBMISSION_ERRORS =
 {
     CANNOT_FIND_GAME_BY_NAME : 1,
     CANNOT_FIND_PLAYER_NAME : 2,
+    MAILBOX_IS_EMPTY : 3,
+    ATTEMPT_TO_SUBMIT_TO_WRONG_CHAIN : 4
+};
+
+const START_GAME_ERRORS = 
+{
+    CANNOT_FIND_GAME_BY_NAME : 1,
 };
 
 function GameManager()
@@ -44,7 +54,7 @@ function GameManager()
             d_active_games[game_name] = 
             {
                 player_list : [],
-                threads : [], //Thread i is the one that player i started
+                has_started : false
             };
             return 0;
         }
@@ -68,62 +78,83 @@ function GameManager()
             }
             else
             {
-                var insertion_index = d_active_games[game_name].player_list.length;
+//                var mailbox = new Mailbox(player_name + "'s mailbox");
+//                var initialChain = new Chain(player_name + "'s chain");
+//                mailbox.addItem(initialChain);
                 d_active_games[game_name].player_list.push(
                     {
                         name : player_name,
-                        current_thread : insertion_index,
                     });
-                d_active_games[game_name].threads.push([]);//Need an empty thread for each player
-                return {rc : 0, player_index : insertion_index};
+                return {rc : 0};
             }
         }
     };
 
+    this.startGame = function(game_name)
+    {
+        if(d_active_games[game_name] === undefined)
+        {
+            return START_GAME_ERRORS.CANNOT_FIND_GAME_BY_NAME;
+        }
+        d_active_games[game_name].has_started = true;
+        for(var i = 0, player; 
+            player = d_active_games[game_name].player_list[i++];)
+        {
+            var mailbox = new Mailbox(player.name + "'s mailbox");
+            var initialChain = new Chain(player.name + "'s chain", 
+                    d_active_games[game_name].player_list.length);
+            mailbox.addItem(initialChain);
+            player.mailbox = mailbox;
+        }
+        return 0;
+    }
+
     this.submitEntryForPlayer = function(game_name, player_name, submission_info)
     {
-        console.log("submitting: " + game_name + " - " + player_name + " - " + JSON.stringify(submission_info));
+        console.log("submitting: " + game_name + " - " + player_name 
+                + " - " + JSON.stringify(submission_info));
         var game = d_active_games[game_name];
+        var retObj = {rc : 0, chainCompleted: false};
         if(game === undefined)
         {
-            return SUBMISSION_ERRORS.CANNOT_FIND_GAME_BY_NAME;
+            retObj.rc = SUBMISSION_ERRORS.CANNOT_FIND_GAME_BY_NAME;
+            return retObj;
         }
         var player_index = findPlayer(game.player_list, player_name);
         if(player_index === undefined)
         {
-            return SUBMISSION_ERRORS.CANNOT_FIND_PLAYER_NAME;
+            retObj.rc = SUBMISSION_ERRORS.CANNOT_FIND_PLAYER_NAME;
+            return retObj;
         }
         else
         {
             var current_player = game.player_list[player_index];
-            var thread_index = current_player.current_thread;
-            var submission_index = game.threads[thread_index].length;
-            if (thread_index !== submission_info.thread_index ||
-                submission_index !== submission_info.submission_index)
+            if(current_player.mailbox.isEmpty())
             {
-              console.log("DOUBLE-POST DETECTED!");
-              console.log("Player: " + current_player.name + " gave bad " +
-                          "submission info: EXP thread_index: " + thread_index +
-                          ", GOT thread_index: " + submission_info.thread_index +
-                          ", EXP submission_index: " + submission_index +
-                          ", GOT submission_index: " + submission_info.submission_index);
-              return;
+                console.log("Player " + player_name + " submitted to chain "
+                        + chainName + "but there's no chain to submit to!");
+                retObj.rc = SUBMISSION_ERRORS.MAILBOX_IS_EMPTY;
+                return retObj;
             }
-            game.threads[thread_index].push(submission_info.submission);
-            thread_index = (thread_index + game.player_list.length - 1) % game.player_list.length;
-            current_player.current_thread = thread_index;
-            console.log("New thread index" + current_player.current_thread);
+            intendedChainNameForSubmission = submission_info.chainName;
+            if(intendedChainNameForSubmission !== current_player.mailbox.getFrontItem().getName()){
+                console.log("Player " + player_name + " tried to submit to chain "
+                    + current_player.mailbox.getFrontItem().getName()
+                    + " but they thought it was chain " + intendedChainNameForSubmission);
+                retObj.rc = SUBMISSION_ERRORS.ATTEMPT_TO_SUBMIT_TO_WRONG_CHAIN;
+                return retObj;
+            }
+            current_chain = current_player.mailbox.popFrontItem();
+            current_chain.addSubmission(player_name, submission_info.submission);
+            if(current_chain.isComplete()){
+                retObj.chainCompleted= true;
+            }
+            next_player = game.player_list[(player_index + 1)%game.player_list.length];
+            next_player.mailbox.addItem(current_chain);
+            return retObj;
         }
     };
 
-    // returns undefined on an unrecoverable error
-    // Otherwise, returns an object with a "has_clue" property whose value is a
-    // boolean. If "has_clue" is true, the returned object will also have the
-    // properties: "clue", "thread_index", and "submission_index".
-    // If "has_clue" is false, it means the player had no next clue. Then there
-    // will be a "finished" property, also a boolean. This will be true if
-    // the player is totally done with every thread or false if the player
-    // was just a little too fast in answering.
     this.getNextClueForPlayer = function(game_name, player_name)
     {
         var nextClue = "";
@@ -140,44 +171,32 @@ function GameManager()
             console.log("Cannot find player name " + player_name);
             return undefined;
         }
-        //The number of submissions this player has made so far
-        //It is also the index that the player is about to submit
-        var thread_index = game.player_list[player_index].current_thread;
-        var player_submission_count = (player_index + game.player_list.length - thread_index)
-                                        % game.player_list.length;
 
-        var current_thread = game.threads[thread_index];
-        if (current_thread.length < player_submission_count)
-        {
+        var player = game.player_list[player_index];
+        if(player.mailbox.isEmpty()){
             console.log("Not terribly out of the ordinary. Someone's too fast.");
             return {has_clue : false, finished : false};
-        } else if (current_thread.length > player_submission_count &&
-                   player_submission_count !== 0)
-        {
-            console.log("ASSERTION ERROR. Somehow the player would be "
-                        + "submitting to the middle of the thread");
-            return undefined;
         }
-
-        if (player_submission_count === 0)
-        {
-            if (current_thread.length === 0) {
-                console.log("Initial clue for player" + player_name);
+        else{
+            var currentChain = player.mailbox.getFrontItem();
+            var nextClue = "";
+            if(currentChain.submissionCount() === 0){
+                //First submission
                 nextClue = "Pick a word or phrase";
-            } else {
+            }
+            else if(currentChain.isComplete()){
+                nextClue = "You're all done!";
                 console.log("Player " + player_name + " is totally done!");
                 return {has_clue : false, finished : true};
             }
+            else{
+                nextClue = currentChain.getLastSubmission().content;
+            }
+            return {has_clue : true,
+                    clue : nextClue,
+                    chainName : currentChain.getName(),
+                    finished : false};
         }
-        else
-        {
-            nextClue = current_thread[player_submission_count - 1];
-        }
-
-        return {has_clue : true,
-                clue : nextClue,
-                thread_index : thread_index,
-                submission_index : player_submission_count};
     };
 
     this.getPreviousPlayer = function(game_name, player_name)
@@ -202,13 +221,15 @@ function GameManager()
         return game.player_list[player_index - 1].name;
     };
 
-    this.getGameData = function(game_name)
-    {
+
+    this.gameHasStarted = function(game_name){
         var game = d_active_games[game_name];
         if(game === undefined){
-            return "No such game " + game_name;
+            console.log("Requested start status of nonexistent game " 
+                    + game_name);
+            return false;
         }
-        return JSON.stringify(game);
+        return game.has_started;
     };
 
     //Arguments: none
@@ -235,4 +256,25 @@ function GameManager()
       console.log(gameList);
       return gameList;
     };
+
+    this.getGameData = function(game_name)
+    {
+        var game = d_active_games[game_name];
+        if(game === undefined){
+            return "No such game " + game_name;
+        }
+        var formattedResults = "";
+        var player_list = game.player_list;
+        if(player_list.length === 0){
+            return "No players in game " + game_name;
+        }
+        formattedResults += player_list[0].mailbox.getFrontItem().getFormattedChainString();
+
+        for(var i = 1, player; player = player_list[i++];)
+        {
+            formattedResults += "\n" + player.mailbox.getFrontItem().getFormattedChainString();
+        }
+        return formattedResults;
+    };
 }
+
