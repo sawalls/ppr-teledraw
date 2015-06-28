@@ -55,3 +55,7 @@ exports.startGame = function(game_name){
 exports.gameHasStarted = function(game_name){
     return sessionGameManager.gameHasStarted(game_name);
 };
+
+exports.getAllPlayerNamesInGame = function(game_name) {
+    return sessionGameManager.getAllPlayerNamesInGame(game_name);
+};

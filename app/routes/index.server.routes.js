@@ -53,7 +53,7 @@ module.exports = function(app){
     app.get("/next_prompt", function(req, res) {
         var game_name = req.session.game_name;
         if(!player_game.gameHasStarted(game_name)){
-            res.render("lobby", {player_is_first : req.session.player_is_first});
+            res.render("lobby", {player_is_first : req.session.player_is_first, playerNames : player_game.getAllPlayerNamesInGame(game_name) });
             return;
         }
         var player_name = req.session.player_name;

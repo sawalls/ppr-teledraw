@@ -257,6 +257,21 @@ function GameManager()
       return gameList;
     };
 
+    //Returns an array of player names
+    this.getAllPlayerNamesInGame = function(game_name)
+    {
+        var game = d_active_games[game_name];
+        if (game === undefined) {
+            console.log("Lookup for undefined game name: " + game_name);
+            return undefined;
+        }
+        var player_name_list = [];
+        for (var i = 0, player; player = game.player_list[i++];) {
+            player_name_list.push(player.name);
+        }
+        return player_name_list;
+    }
+
     this.getGameData = function(game_name)
     {
         var game = d_active_games[game_name];

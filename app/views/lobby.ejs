@@ -2,10 +2,18 @@
 <html>
     <head><title>Lobby</title></head>
     <body>
+        <h1>Let's all go to the Lobby!</h1>
         <div>
-        <p>Let's all go to the Lobby!</p>
         <p>Please wait here until the leader starts the game.</p>
+        <p>Kindly refresh this page every now and again</p>
         </div>
+	<h1>Current player list:</h1>
+	<ul>
+        <% for (var i = 0; i < playerNames.length; i += 1) {%>
+	    <% var playerName = playerNames[i]; %>
+            <li><%= playerName %></li>
+        <% } %>
+	</ul>
         <% if(player_is_first) {%>
         <form action="/start_game" method="post">
         <div class="button">
