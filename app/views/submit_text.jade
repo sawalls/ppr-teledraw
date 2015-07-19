@@ -11,7 +11,10 @@ html
         form(action="/my_submission_form_page", method="post")
             input(type="hidden", name="chainName", value=chainName)
             div
-                p=clue
+                -if(clue.match(/\.jpg\b|\.png\b/))
+                    img(src=clue, alt="clue", width="800")
+                -else
+                    p=clue
             div
                 label(for="submission")
                 input(type="text", id="submission", name="user_submission")
