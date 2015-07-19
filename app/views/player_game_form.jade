@@ -1,0 +1,33 @@
+doctype html
+html
+    head
+        title Teledraw!
+    body
+        - var printed_a_game = false
+        - for(var gameName in gameList)
+            if(!gameList.hasOwnProperty(gameName))
+                -continue
+            li=gameName
+            -var printed_a_game = true
+            -var playerNames = gameList[gameName]
+            if(playerNames.length === 0)
+                -continue
+                h3 "Players"
+                ul
+                    -for(var i = 0; i < playerNames.length; i += 1)
+                        li=playerNames[i]
+        if(printed_a_game === false)
+            p No games currently going. Feel free to make your own!
+        div(id="game_form")
+            h1 Join a game:
+            form(action="/my-handling-form-page", method="post")
+                div
+                    label(for="game_name") Game Name:
+                    input(type="text", id="game_name", name="user_game_name")
+                 div
+                    label(for="player_name") Player Name:
+                    input(type="text", id="player_name", name="user_player_name")
+                div(class="button")
+                    button(type="submit") Submit Info
+
+

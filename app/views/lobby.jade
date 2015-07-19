@@ -1,0 +1,20 @@
+doctype html
+html
+    head
+        title Lobby
+    body
+        h1 Let's all go to the Lobby!
+        div
+            p.
+                Please wait here until the leader starts the game.
+                Kindly refresh this page every now and again
+        h1 Current Player List:
+        ul
+            -for(var i = 0; i < playerNames.length; i += 1)
+                -var playerName = playerNames[i];
+                li=playerName
+        if player_is_first
+        form(action="/start_game", method="post")
+        div(class="button")
+            button(type="submit") START THE GAME
+
