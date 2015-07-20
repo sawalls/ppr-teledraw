@@ -5,6 +5,9 @@ function Chain(chainName, maxChainLength)
     var chainName = chainName;
     var maxChainLength = maxChainLength;
     var submissions = [];
+    // submission objects by convention have the following properties:
+    //   - author: string name of author
+    //   - content: string of the link or description
     this.addSubmission = function(author, content)
     {
         if(submissions.length === maxChainLength){
@@ -29,12 +32,13 @@ function Chain(chainName, maxChainLength)
     this.getName = function(){
         return chainName;
     };
-    this.getFormattedChainString = function(){
-        var formattedChain = chainName + " \n";
-        for(var i = 0, sub; sub = submissions[i++];)
-        {
-            formattedChain += sub.author + ": " + sub.content + "\n";
-        }
-        return formattedChain;
+
+    // Returns a ChainInfo object, which by convention has
+    // the following properties:
+    //   - chainName: string containing the title (with og. owner)
+    //   - submissions: array of submission objects, q.v. addSubmission
+    this.getChainInfo = function(){
+        var chainInfo = {chainName: chainName, submissions: submissions};
+        return chainInfo;
     };
 }

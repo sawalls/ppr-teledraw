@@ -27,5 +27,9 @@ function Mailbox(mailboxName)
         return frontElt;
     }
     this.getName = function(){return mailboxName;};
+    this.getAllItems = function()
+    {
+        return mailQueue;
+    }
 }
 

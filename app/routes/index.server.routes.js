@@ -81,7 +81,8 @@ module.exports = function(app){
     app.post("/admin_get_game_data", function(req, res){
         console.log("Get game data");
         console.log(req.param("game_name"));
-        res.send(player_game.getAllGameData(req.param("game_name")));
+        var gameData = player_game.getAllGameData(req.param("game_name"));
+        res.render("admin_get_game_data", {chain_infos: gameData});
     });
     app.post("/start_game", function(req, res){
         var game_name = req.session.game_name

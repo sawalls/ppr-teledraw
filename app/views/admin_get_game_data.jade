@@ -1,0 +1,10 @@
+doctype html
+html
+    head
+        title Admin Game Data!
+    body
+        each chain_info in chain_infos
+          h1= chain_info.chainName
+          ol
+            each submission in chain_info.submissions
+              li= submission.author + ': ' + submission.content

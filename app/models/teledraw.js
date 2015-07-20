@@ -272,24 +272,27 @@ function GameManager()
         return player_name_list;
     }
 
-    this.getGameData = function(game_name)
+    this.getChainInfos = function(game_name)
     {
         var game = d_active_games[game_name];
         if(game === undefined){
             return "No such game " + game_name;
         }
-        var formattedResults = "";
+        var chain_infos = [];
         var player_list = game.player_list;
         if(player_list.length === 0){
             return "No players in game " + game_name;
         }
-        formattedResults += player_list[0].mailbox.getFrontItem().getFormattedChainString();
 
-        for(var i = 1, player; player = player_list[i++];)
+        for(var i = 0, player; player = player_list[i++];)
         {
-            formattedResults += "\n" + player.mailbox.getFrontItem().getFormattedChainString();
+            var player_chains = player.mailbox.getAllItems();
+            for (var j = 0, chain; chain = player_chains[j++];)
+            {
+                chain_infos.push(chain.getChainInfo());
+            }
         }
-        return formattedResults;
+        return chain_infos;
     };
 }
 

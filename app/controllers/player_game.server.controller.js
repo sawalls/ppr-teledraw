@@ -45,7 +45,7 @@ exports.getPreviousPlayer = function(game_name, player_name) {
 };
 
 exports.getAllGameData = function(game_name){
-    return sessionGameManager.getGameData(game_name);
+    return sessionGameManager.getChainInfos(game_name);
 };
 
 exports.startGame = function(game_name){
