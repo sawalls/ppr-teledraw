@@ -22,10 +22,14 @@ module.exports = function(){
     app.use(bodyParser.json());
     app.use(methodOverride());
 
+    var two_months_ms = 60 * 24 * 60 * 60 * 1000;
     app.use(session({
         saveUninitialized : true,
         resave : true,
-        secret : config.sessionSecret
+        secret : config.sessionSecret,
+	cookie : {
+		maxAge : two_months_ms
+	}
     }));
 
     app.set("views", "./app/views");
