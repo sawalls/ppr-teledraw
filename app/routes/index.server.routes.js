@@ -1,6 +1,38 @@
-module.exports = function(app){
-    var index = require("../controllers/index.server.controller.js");
+module.exports = function(app, io){
+
     var player_game = require("../controllers/player_game.server.controller.js");
+
+    io.sockets.on("connection", function(socket){
+        console.log("Connection made to the socket server!");
+        socket.emit("message", {message: "welcome to the chat"});
+        socket.on("send", function(data){
+            console.log("Sending data from client: " + JSON.stringify(data));
+            io.sockets.emit("message", data);
+        });
+        socket.on("gameCreated", function(data){
+            console.log("Client created game: " + data.gameName);
+            var gameName = data.gameName;
+            var playerName = data.playerName;
+            console.log(game_name);
+            console.log(player_name);
+            var obj = player_game.processNewPlayerGameInfo(game_name, player_name);
+            var rc = obj.rc;
+            //TODO: Do something when these return codes appear
+            if(rc === 1){
+                //Cannot find game and failed to create
+            }
+            else if(rc === 2){
+                //Player name in use
+            }
+            socket.broadcast.emit("addGame", data);
+            req.session.game_name = game_name;
+            req.session.player_name = player_name;
+            req.session.player_is_first = obj.player_is_first;
+            socket.join(gameName);
+        });
+    });
+
+
     app.get('/', player_game.renderEntryPage);
     app.post("/my-handling-form-page", function(req, res){
         console.log("handling the post");
@@ -53,7 +85,8 @@ module.exports = function(app){
     app.get("/next_prompt", function(req, res) {
         var game_name = req.session.game_name;
         if(!player_game.gameHasStarted(game_name)){
-            res.render("lobby", {player_is_first : req.session.player_is_first, playerNames : player_game.getAllPlayerNamesInGame(game_name) });
+            res.render("lobby", {player_is_first : req.session.player_is_first, 
+                playerNames : player_game.getAllPlayerNamesInGame(game_name) });
             return;
         }
         var player_name = req.session.player_name;

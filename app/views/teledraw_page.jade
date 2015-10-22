@@ -22,20 +22,21 @@ html
                         -for(var i = 0; i < playerNames.length; i += 1)
                             li=playerNames[i]
             if(printed_a_game === false)
-                p No games currently going. Feel free to make your own!
-            div#gameNameContainer
-                input(type='text')#gameNameInput
-                button#createGameBtn Create Game
-            div(id="game_form")
-                h1 Join a game:
-                form(action="/my-handling-form-page", method="post")
-                    div
-                        label(for="game_name") Game Name:
-                        input(type="text", id="game_name", name="user_game_name")
-                     div
-                        label(for="player_name") Player Name:
-                        input(type="text", id="player_name", name="user_player_name")
-                    div(class="button")
-                        button(type="submit") Submit Info
+                p#noGamesNote No games currently going. Feel free to make your own!
+            h1 Join a game:
+            div#gameInfo
+                div#gameNameContainer
+                    label(for="gameNameInput") Game Name:
+                    input(type="text")#gameNameInput
+                div#playerNameContainer
+                    label(for="playerNameInput") Player Name:
+                    input(type="text")#playerNameInput
+                div#createGameButton.button
+                    button#createGameBtn Create Game
 
+        div#lobbyStuff
+            p#lobbyTestPara
+            div#startGameButtonContainer.button
+            div#playerListContainer
+                ul#playerList
 

@@ -4,7 +4,7 @@ var sessionGameManager = new GameManager;
 
 exports.renderEntryPage = function(req, res){
     var gameList = sessionGameManager.getGameList();
-    res.render("player_game_form",{gameList: gameList});
+    res.render("teledraw_page.jade",{gameList: gameList});
 };
 
 exports.processNewPlayerGameInfo = function(game_name, player_name){
