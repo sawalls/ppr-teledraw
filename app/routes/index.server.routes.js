@@ -13,9 +13,9 @@ module.exports = function(app, io){
             console.log("Client created game: " + data.gameName);
             var gameName = data.gameName;
             var playerName = data.playerName;
-            console.log(game_name);
-            console.log(player_name);
-            var obj = player_game.processNewPlayerGameInfo(game_name, player_name);
+            console.log(gameName);
+            console.log(playerName);
+            var obj = player_game.processNewPlayerGameInfo(gameName, playerName);
             var rc = obj.rc;
             //TODO: Do something when these return codes appear
             if(rc === 1){
@@ -23,12 +23,41 @@ module.exports = function(app, io){
             }
             else if(rc === 2){
                 //Player name in use
+                socket.emit("warning", 
+                        {msg : "Player name " + playerName + " is already in use"});
+                return;
             }
-            socket.broadcast.emit("addGame", data);
-            req.session.game_name = game_name;
-            req.session.player_name = player_name;
-            req.session.player_is_first = obj.player_is_first;
+            if(obj.playerIsFirst) //Player created the game
+            {
+                socket.broadcast.emit("addGame", data);
+            }
+            socket.emit("joinedGame", {gameName : gameName,
+                playerList : player_game.getAllPlayerNamesInGame(gameName)});
+            io.to(gameName).emit("otherPlayerJoinedGame", {playerName : playerName});
             socket.join(gameName);
+            /*
+            req.session.gameName = gameName;
+            req.session.playerName = playerName;
+            req.session.playerIsFirst = obj.playerIsFirst;
+            */
+        });
+        socket.on("gameStarted", function(data){
+            player_game.startGame(data.gameName);
+            io.to(data.gameName).emit("gameStarted", {});
+        });
+        socket.on("clueSubmitted", function(data){
+            console.log("Game: " + data.gameName + " Player: " 
+                    + data.playerName + " Clue: " + data.clue);
+            var retObj = player_game.submitEntry(data.gameName, data.playerName, data.submissionInfo);
+            console.log("retObj: " + JSON.stringify(retObj));
+            if(retObj.rc){
+                console.log("submitEntry returned code: " + retObj.rc);
+                return;
+            }
+            io.to(data.gameName).emit("clueRecieved", {
+                recievingPlayer : retObj.recievingPlayer,
+                submissionInfo : retObj.submissionInfo
+            });
         });
     });
 

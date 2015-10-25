@@ -7,23 +7,23 @@ exports.renderEntryPage = function(req, res){
     res.render("teledraw_page.jade",{gameList: gameList});
 };
 
-exports.processNewPlayerGameInfo = function(game_name, player_name){
-    var rc = sessionGameManager.createGame(game_name);
-    var player_is_first = false;
+exports.processNewPlayerGameInfo = function(gameName, playerName){
+    var rc = sessionGameManager.createGame(gameName);
+    var playerIsFirst = false;
     if(rc === 1){
         console.log("Game name already in use");
     }
     else{
-        player_is_first = true;
+        playerIsFirst = true;
     }
-    var obj = sessionGameManager.addPlayerToGame(player_name, game_name);
-    obj.player_is_first = player_is_first;
+    var obj = sessionGameManager.addPlayerToGame(playerName, gameName);
+    obj.playerIsFirst = playerIsFirst;
     var rc = obj.rc;
     if(rc === 1){
-        console.log("Cannot find game: " + game_name);
+        console.log("Cannot find game: " + gameName);
     }
     else if(rc === 2){
-        console.log("Player name " + player_name + " is in use");
+        console.log("Player name " + playerName + " is in use");
     }
     return obj;
 };
@@ -57,5 +57,6 @@ exports.gameHasStarted = function(game_name){
 };
 
 exports.getAllPlayerNamesInGame = function(game_name) {
+    console.log(JSON.stringify(sessionGameManager.getAllPlayerNamesInGame(game_name)));
     return sessionGameManager.getAllPlayerNamesInGame(game_name);
 };

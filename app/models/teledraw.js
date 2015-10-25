@@ -132,7 +132,7 @@ function GameManager()
             if(current_player.mailbox.isEmpty())
             {
                 console.log("Player " + player_name + " submitted to chain "
-                        + chainName + "but there's no chain to submit to!");
+                        + submissionInfo.chainName + "but there's no chain to submit to!");
                 retObj.rc = SUBMISSION_ERRORS.MAILBOX_IS_EMPTY;
                 return retObj;
             }
@@ -151,6 +151,8 @@ function GameManager()
             }
             next_player = game.player_list[(player_index + 1)%game.player_list.length];
             next_player.mailbox.addItem(current_chain);
+            retObj.recievingPlayer = next_player.name;
+            retObj.submissionInfo = submission_info;
             return retObj;
         }
     };
