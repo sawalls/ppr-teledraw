@@ -296,5 +296,13 @@ function GameManager()
         }
         return chain_infos;
     };
+
+    this.get_mailbox = function(game_name, player_name)
+    {
+        var game = d_active_games[game_name];
+        var player_list = game.player_list;
+        var player = player_list[findPlayer(player_list, player_name)];
+        return player.mailbox.getAllItems();
+    };
 }
 

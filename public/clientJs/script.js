@@ -35,22 +35,25 @@ function createGame(){
              playerName : playerName});
 }
 
-function enterLobby(gameName, playerList)
+function enterLobby(gameName, playerList, playerIsFirst)
 {
     console.log(JSON.stringify(playerList));
-    $('#startupFormStuff').remove();
+
+    $('#gameListStuff').remove();
     $('#lobbyPlayerListHeading').text("Player List:");
     for(var i = 0; i < playerList.length; i++){
         $('#playerList').append("<li>" + playerList[i] + "</li>");
     }
-    if(playerList.length === 1){ //This player created the game
+    if(playerIsFirst){ //This player created the game
         $("#startGameButtonContainer")
             .append("<button id='startGameBtn' onclick='startGame()'>Start Game</button>");
     }
+    $('#lobbyStuff').show();
 }
 
 function startGame(){
     console.log("Starting game " + g_gameName);
+    $("#startGameButtonContainer").hide();
     socket.emit("gameStarted", {gameName: g_gameName});
 }
 
@@ -97,6 +100,35 @@ function submitClue(){
     showNextClueInMailbox();
 }
 
+function add_clue_to_mailbox(clue) {
+    g_mailbox.push(clue);
+    if(g_mailbox.length === 1){
+        showNextClueInMailbox();
+    }
+}
+
+socket.on("initialize", function(data) {
+    console.log("initial_data: " + JSON.stringify(data));
+    if (!data) {
+        //Draw the gameListStuff
+        $("#gameListStuff").show();
+    } else {
+        enterLobby(data.game_name,
+                   data.player_name_list,
+                   data.player_name_list[0] === data.player_name);
+        if (data.game_has_started) {
+            g_mailbox = data.mailbox;
+            for (var i = 0, clue; clue = g_mailbox[i++]; ) {
+                add_clue_to_mailbox(clue);
+            }
+
+            $("#gameplayStuff").show();
+            $("#mainEntryContainer").show();
+            $("#submitBtn").removeAttr("disabled");
+        }
+    }
+});
+
 socket.on("warning", function(data){
     alert(data.msg);
 });
@@ -106,32 +138,35 @@ socket.on('addGame', function(data){
 });
 
 socket.on("joinedGame", function(data){
-    enterLobby(data.gameName, data.playerList);
+    enterLobby(data.gameName, data.playerList, data.playerIsFirst);
 });
 
 socket.on("gameStarted", function(data){
      $("#mainEntryContainer").show();
      $("#submitBtn").removeAttr("disabled");
+     $("#gameplayStuff").show();
 });
 
 socket.on('otherPlayerJoinedGame', function(data){
     console.log("otherPlayerJoinedGame");
-    $('#playerList').append("<li>" + data.playerName + "</li>");
+    $('#playerList').append("<li>" + data.player_name + "</li>");
 });
 
 socket.on("clueRecieved", function(data){
     console.log("Clue Recieved: " + JSON.stringify(data));
-        if(data.recievingPlayer === g_playerName){
-        g_mailbox.push(data.submissionInfo);
-        if(g_mailbox.length === 1){
-            showNextClueInMailbox();
-        }
+    if(data.recievingPlayer === g_playerName){
+        add_clue_to_mailbox(data.submissionInfo);
     }
 });
 
 $(function(){
-    console.log("Loaded presets!");
+    console.log("Top-level jQuery function started");
+    console.log("Waiting for initial_data");
+
     $("#createGameBtn").click(function() {createGame();});
     $("#submitBtn").click(function() {submitClue();});
-    $("#mainEntryContainer").hide();
+
+    $("#gameListStuff").hide();
+    $("#lobbyStuff").hide()
+    $("#gameplayStuff").hide();
 });

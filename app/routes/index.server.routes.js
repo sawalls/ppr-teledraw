@@ -1,21 +1,27 @@
+function get_initial_data(session) {
+	
+};
+
 module.exports = function(app, io){
 
     var player_game = require("../controllers/player_game.server.controller.js");
 
     io.sockets.on("connection", function(socket){
-        console.log("Connection made to the socket server!");
-        socket.emit("message", {message: "welcome to the chat"});
-        socket.on("send", function(data){
-            console.log("Sending data from client: " + JSON.stringify(data));
-            io.sockets.emit("message", data);
-        });
+        console.log("Connection made to the socket server from " + socket.request.connection.remoteAddress + "!");
+        console.log("Session: ", socket.handshake.session);
+
+	var initial_data = player_game.getInitialData(
+                                socket.handshake.session.gameName,
+			 	socket.handshake.session.player_name);
+	socket.emit("initialize", initial_data);
+
         socket.on("gameCreated", function(data){
             console.log("Client created game: " + data.gameName);
             var gameName = data.gameName;
-            var playerName = data.playerName;
+            var player_name = data.playerName;
             console.log(gameName);
-            console.log(playerName);
-            var obj = player_game.processNewPlayerGameInfo(gameName, playerName);
+            console.log(player_name);
+            var obj = player_game.processNewPlayerGameInfo(gameName, player_name);
             var rc = obj.rc;
             //TODO: Do something when these return codes appear
             if(rc === 1){
@@ -24,22 +30,25 @@ module.exports = function(app, io){
             else if(rc === 2){
                 //Player name in use
                 socket.emit("warning", 
-                        {msg : "Player name " + playerName + " is already in use"});
+                        {msg : "Player name " + player_name + " is already in use"});
                 return;
             }
             if(obj.playerIsFirst) //Player created the game
             {
                 socket.broadcast.emit("addGame", data);
             }
-            socket.emit("joinedGame", {gameName : gameName,
-                playerList : player_game.getAllPlayerNamesInGame(gameName)});
-            io.to(gameName).emit("otherPlayerJoinedGame", {playerName : playerName});
+            var player_list = player_game.getAllPlayerNamesInGame(gameName);
+            socket.emit("joinedGame", {
+                gameName : gameName,
+                playerList : player_list,
+                playerIsFirst : player_list[0] === player_name
+            });
+            io.to(gameName).emit("otherPlayerJoinedGame", {player_name : player_name});
             socket.join(gameName);
-            /*
-            req.session.gameName = gameName;
-            req.session.playerName = playerName;
-            req.session.playerIsFirst = obj.playerIsFirst;
-            */
+            socket.handshake.session.gameName = gameName;
+            socket.handshake.session.player_name = player_name;
+            socket.handshake.session.playerIsFirst = obj.playerIsFirst;
+            socket.handshake.session.save();
         });
         socket.on("gameStarted", function(data){
             player_game.startGame(data.gameName);
