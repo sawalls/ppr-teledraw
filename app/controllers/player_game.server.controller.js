@@ -87,7 +87,21 @@ exports.getInitialData = function(game_name, player_name) {
         player_name: player_name,
     };
     if (initialData.game_has_started) {
-        initialData.mailbox = sessionGameManager.get_mailbox(game_name, player_name);
+        var mailbox = sessionGameManager.get_mailbox(game_name, player_name);
+        var client_mailbox = [];
+
+        for (var i = 0, chain; chain = mailbox[i];) {
+            var client_chain = {};
+            client_chain.chainName = chain.getName();
+
+            var last_submission = chain.getLastSubmission();
+            if (last_submission !== undefined) {
+                client_chain.submission = last_submission.content;
+            }
+            client_mailbox.push(client_chain);
+        }
+
+        initialData.mailbox = client_mailbox;
     }
 
     return initialData;

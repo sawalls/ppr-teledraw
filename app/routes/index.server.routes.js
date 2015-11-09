@@ -10,10 +10,16 @@ module.exports = function(app, io){
         console.log("Connection made to the socket server from " + socket.request.connection.remoteAddress + "!");
         console.log("Session: ", socket.handshake.session);
 
-	var initial_data = player_game.getInitialData(
-                                socket.handshake.session.gameName,
-			 	socket.handshake.session.player_name);
-	socket.emit("initialize", initial_data);
+        socket.on("initializeRequest", function(data) {
+            var initial_data = player_game.getInitialData(
+                                    socket.handshake.session.gameName,
+                                    socket.handshake.session.player_name);
+            socket.emit("initializeResponse", initial_data);
+            if (initial_data !== undefined) {
+                console.log("Had someone rejoin the room: " + initial_data.game_name);
+                socket.join(initial_data.game_name);
+            }
+        });
 
         socket.on("gameCreated", function(data){
             console.log("Client created game: " + data.gameName);
@@ -44,6 +50,7 @@ module.exports = function(app, io){
                 playerIsFirst : player_list[0] === player_name
             });
             io.to(gameName).emit("otherPlayerJoinedGame", {player_name : player_name});
+            console.log("Joined the room: " + gameName);
             socket.join(gameName);
             socket.handshake.session.gameName = gameName;
             socket.handshake.session.player_name = player_name;

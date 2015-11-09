@@ -6,7 +6,7 @@ html
         script(src="/socket.io/socket.io.js")
         script(src="clientJs/script.js")
     body
-        div#gameListStuff
+        div#gameListStuff(style="display: none;")
             ol#gameList
             - var printed_a_game = false
             - for(var gameName in gameList)
@@ -34,13 +34,13 @@ html
                 div#createGameButton.button
                     button#createGameBtn Create Game
 
-        div#lobbyStuff
+        div#lobbyStuff(style="display: none;")
             div#startGameButtonContainer.button
             p#lobbyPlayerListHeading
             div#playerListContainer
                 ul#playerList
 
-        div#gameplayStuff
+        div#gameplayStuff(style="display: none;")
             div#mainEntryContainer
                 label(for="mainEntry") Entry:
                 input(type="text")#mainEntry
