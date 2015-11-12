@@ -78,11 +78,15 @@ exports.getInitialData = function(game_name, player_name) {
         return undefined;
     }
 
+
+    var current_player = sessionGameManager.findPlayer(game_name, player_name);
+
     var initialData = {
         game_name: game_name,
         game_has_started: sessionGameManager.gameHasStarted(game_name),
         player_name_list: game,
         player_name: player_name,
+        player_has_finished: current_player === undefined ? undefined : current_player.has_finished,
     };
 
     if (initialData.game_has_started) {

@@ -65,13 +65,8 @@ function showNextClueInMailbox()
         var chain = g_mailbox[0];
         console.log("something in the mailbox!");
         if(chain.chainName === g_player_name + "'s chain"){
-            if (chain.submission) {
-                $("#clueContainer").html("<p>All done! Wait for the reveal!</p>");
-                return;
-            } else {
-                console.log('Reloaded with only your own chain. No problem.');
-                return;
-            }
+            console.log('Reloaded with only your own chain. No problem.');
+            return;
         }
         var clue = chain.submission;
         if(clue.match(/\.jpg\b|\.png\b|\.gif\b/g)){
@@ -139,6 +134,11 @@ socket.on("initializeResponse", function(data) {
             $("#mainEntryContainer").show();
             $("#submitBtn").removeAttr("disabled");
         }
+        if (data.player_has_finished) {
+            $("#gameplayStuff").show();
+            $('#mainEntryContainer').hide();
+            $('#clueContainer').html("<p>You're all done! Just wait for the reveal.</p>")
+        }
     }
 });
 
@@ -171,6 +171,12 @@ socket.on("clueRecieved", function(data){
     if(data.recievingPlayer === g_player_name){
         add_clue_to_mailbox(data.submissionInfo);
     }
+});
+
+socket.on("finished", function(data) {
+    console.log("finished");
+    $('#mainEntryContainer').hide();
+    $('#clueContainer').html("<p>You're all done! Just wait for the reveal.</p>")
 });
 
 $(function(){

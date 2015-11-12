@@ -72,10 +72,16 @@ module.exports = function(app, io){
                 console.log("submitEntry returned code: " + retObj.rc);
                 return;
             }
-            io.to(data.gameName).emit("clueRecieved", {
-                recievingPlayer : retObj.recievingPlayer,
-                submissionInfo : retObj.submissionInfo
-            });
+
+            if (retObj.chainCompleted){
+                socket.emit('finished', {});
+                return;
+            } else {
+                io.to(data.gameName).emit("clueRecieved", {
+                    recievingPlayer : retObj.recievingPlayer,
+                    submissionInfo : retObj.submissionInfo
+                });
+            }
         });
     });
 

@@ -33,7 +33,7 @@ function GameManager()
     var d_active_games = {};//Key value pair gameId to game
     
     //Helper functions
-    function findPlayer(player_list, name)
+    function findPlayerIndex(player_list, name)
     {
         for(i = 0, len = player_list.length; i < len; i++)
         {
@@ -47,6 +47,27 @@ function GameManager()
     }
 
     //Public Interface
+    this.findPlayer = function (game_name, player_name)
+    {
+        var game = d_active_games[game_name];
+        if(game === undefined)
+        {
+            console.log("Couldn't find game named: " + game_name);
+            return undefined;
+        }
+        var player_index = findPlayerIndex(game.player_list, player_name);
+        if(player_index === undefined)
+        {
+            console.log("Couldn't find player named " + player_name +
+                        " in game named: " + game_name);
+            return undefined;
+        }
+        else
+        {
+            return game.player_list[player_index];
+        }
+    }
+
     this.createGame = function(game_name, password)
     {
         if(d_active_games[game_name] === undefined)
@@ -72,7 +93,7 @@ function GameManager()
         }
         else
         {
-            if(findPlayer(d_active_games[game_name].player_list, player_name) !== undefined)
+            if(findPlayerIndex(d_active_games[game_name].player_list, player_name) !== undefined)
             {
                 return {rc : ADD_PLAYER_ERRORS.PLAYER_NAME_IN_USE};
             }
@@ -120,7 +141,7 @@ function GameManager()
             retObj.rc = SUBMISSION_ERRORS.CANNOT_FIND_GAME_BY_NAME;
             return retObj;
         }
-        var player_index = findPlayer(game.player_list, player_name);
+        var player_index = findPlayerIndex(game.player_list, player_name);
         if(player_index === undefined)
         {
             retObj.rc = SUBMISSION_ERRORS.CANNOT_FIND_PLAYER_NAME;
@@ -148,6 +169,7 @@ function GameManager()
             current_chain.addSubmission(player_name, submission_info.submission);
             if(current_chain.isComplete()){
                 retObj.chainCompleted= true;
+                current_player.has_finished = true;
             }
             next_player = game.player_list[(player_index + 1)%game.player_list.length];
             next_player.mailbox.addItem(current_chain);
@@ -167,7 +189,7 @@ function GameManager()
             console.log("Cannot find game name " + game_name);
             return undefined;
         }
-        var player_index = findPlayer(game.player_list, player_name);
+        var player_index = findPlayerIndex(game.player_list, player_name);
         if(player_index === undefined)
         {
             console.log("Cannot find player name " + player_name);
@@ -209,14 +231,14 @@ function GameManager()
             console.log("Cannot find game name " + game_name);
             return undefined;
         }
-        var player_index = findPlayer(game.player_list, player_name);
+        var player_index = findPlayerIndex(game.player_list, player_name);
         if(player_index === undefined)
         {
             console.log("Cannot find player name " + player_name);
             return undefined;
         }
 
-        var player_index = findPlayer(game.player_list, player_name);
+        var player_index = findPlayerIndex(game.player_list, player_name);
         if(player_index === 0){
             return game.player_list[game.player_list.length - 1].name;
         }
@@ -301,7 +323,7 @@ function GameManager()
     {
         var game = d_active_games[game_name];
         var player_list = game.player_list;
-        var player = player_list[findPlayer(player_list, player_name)];
+        var player = player_list[findPlayerIndex(player_list, player_name)];
         return player.mailbox.getAllItems();
     };
 }
