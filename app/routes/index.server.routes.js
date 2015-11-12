@@ -14,6 +14,8 @@ module.exports = function(app, io){
             var initial_data = player_game.getInitialData(
                                     socket.handshake.session.gameName,
                                     socket.handshake.session.player_name);
+            console.log("INITIAL DATA:");
+            console.log(JSON.stringify(initial_data));
             socket.emit("initializeResponse", initial_data);
             if (initial_data !== undefined) {
                 console.log("Had someone rejoin the room: " + initial_data.game_name);

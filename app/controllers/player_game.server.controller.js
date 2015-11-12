@@ -70,10 +70,8 @@ exports.getInitialData = function(game_name, player_name) {
     if (game_name === undefined) {
         return undefined;
     }
-
     var game_list = sessionGameManager.getGameList(game_name),
         game = game_list[game_name];
-
     if (!game) {
         console.log("ERROR: we got the game_name: '" + game_name +
                     "' from the session, but no such game exists!")
@@ -86,11 +84,12 @@ exports.getInitialData = function(game_name, player_name) {
         player_name_list: game,
         player_name: player_name,
     };
+
     if (initialData.game_has_started) {
         var mailbox = sessionGameManager.get_mailbox(game_name, player_name);
         var client_mailbox = [];
 
-        for (var i = 0, chain; chain = mailbox[i];) {
+        for (var i = 0, chain; chain = mailbox[i++];) {
             var client_chain = {};
             client_chain.chainName = chain.getName();
 
