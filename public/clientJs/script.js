@@ -1,3 +1,5 @@
+localStorage.debug = '*';
+
 function testFunc(){
     console.log("Loaded the external script!");
 }
@@ -8,6 +10,8 @@ var g_game_name = "";
 var g_game_has_started = false;
 //var g_firstSubmissionWasMade = false;
 var g_mailbox = [];
+var g_game_has_finished = false;
+var g_player_is_first = false;
 testFunc();
 
 
@@ -36,7 +40,7 @@ function createGame(){
              playerName : playerName});
 }
 
-function renderLobby(gameName, playerList, playerIsFirst)
+function renderLobby(gameName, playerList)
 {
     console.log(JSON.stringify(playerList));
 
@@ -45,7 +49,7 @@ function renderLobby(gameName, playerList, playerIsFirst)
     for(var i = 0; i < playerList.length; i++){
         $('#playerList').append("<li>" + playerList[i] + "</li>");
     }
-    if(playerIsFirst && !g_game_has_started){ //This player created the game
+    if(g_player_is_first && !g_game_has_started){ //This player created the game
         $("#startGameButtonContainer")
             .append("<button id='startGameBtn' onclick='startGame()'>Start Game</button>");
     }
@@ -109,6 +113,28 @@ function add_clue_to_mailbox(clue) {
     }
 }
 
+function render_player_finished() {
+    $("#gameplayStuff").show();
+    $('#mainEntryContainer').hide();
+    $('#clueContainer').html("<p>You're all done! Just wait for the reveal.</p>");
+}
+
+function render_game_finished() {
+    if (g_player_is_first) {
+        $('#clueContainer').html("<p>The game's totally over. You're the host!</p>");
+        $('#clueContainer')
+            .append("<button id='start_reveal_btn' onclick='start_reveal()'>Start Reveal</button>");
+    } else {
+        $('#clueContainer').html("<p>The game's totally over! Yell at the host to start the reveal!</p>");
+    }
+}
+
+function start_reveal() {
+    console.log("Starting reveal!");
+    $("#start_reveal_btn").hide();
+    socket.emit("reveal_started", {gameName: g_game_name});
+}
+
 socket.on("initializeResponse", function(data) {
     console.log("initial_data: " + JSON.stringify(data));
     if (!data) {
@@ -118,6 +144,7 @@ socket.on("initializeResponse", function(data) {
         g_game_name = data.game_name;
         g_player_name = data.player_name;
         g_game_has_started = data.game_has_started;
+        g_game_has_finished = data.game_has_finished;
         if (g_game_has_started) {
             for (var i = 0, clue; clue = data.mailbox[i++]; ) {
                 add_clue_to_mailbox(clue);
@@ -125,9 +152,9 @@ socket.on("initializeResponse", function(data) {
         }
 
         console.log('About to call renderLobby from initializeResponse handler');
+        g_player_is_first = data.player_name_list[0] === data.player_name;
         renderLobby(data.game_name,
-                    data.player_name_list,
-                    data.player_name_list[0] === data.player_name);
+                    data.player_name_list);
 
         if (g_game_has_started) {
             $("#gameplayStuff").show();
@@ -135,11 +162,17 @@ socket.on("initializeResponse", function(data) {
             $("#submitBtn").removeAttr("disabled");
         }
         if (data.player_has_finished) {
-            $("#gameplayStuff").show();
-            $('#mainEntryContainer').hide();
-            $('#clueContainer').html("<p>You're all done! Just wait for the reveal.</p>")
+            render_player_finished();
+        }
+        if (g_game_has_finished) {
+            render_game_finished();
         }
     }
+});
+
+socket.on("game_finished", function(data) {
+    console.log("game_finished");
+    render_game_finished();
 });
 
 socket.on("warning", function(data){
@@ -151,7 +184,9 @@ socket.on('addGame', function(data){
 });
 
 socket.on("joinedGame", function(data){
-    renderLobby(data.gameName, data.playerList, data.playerIsFirst);
+    console.log("joinedGame: " + data);
+    g_player_is_first = data.playerIsFirst;
+    renderLobby(data.gameName, data.playerList);
 });
 
 socket.on("gameStarted", function(data){
@@ -173,10 +208,9 @@ socket.on("clueRecieved", function(data){
     }
 });
 
-socket.on("finished", function(data) {
-    console.log("finished");
-    $('#mainEntryContainer').hide();
-    $('#clueContainer').html("<p>You're all done! Just wait for the reveal.</p>")
+socket.on("player_finished", function(data) {
+    console.log("player_finished");
+    render_player_finished();
 });
 
 $(function(){

@@ -74,7 +74,10 @@ module.exports = function(app, io){
             }
 
             if (retObj.chainCompleted){
-                socket.emit('finished', {});
+                socket.emit('player_finished', {});
+                if (player_game.gameIsFinished(data.gameName)) {
+                    io.to(data.gameName).emit("game_finished", {});
+                }
                 return;
             } else {
                 io.to(data.gameName).emit("clueRecieved", {
@@ -84,7 +87,6 @@ module.exports = function(app, io){
             }
         });
     });
-
 
     app.get('/', player_game.renderEntryPage);
     app.post("/my-handling-form-page", function(req, res){

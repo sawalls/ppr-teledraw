@@ -37,8 +37,13 @@ function Chain(chainName, maxChainLength)
     // the following properties:
     //   - chainName: string containing the title (with og. owner)
     //   - submissions: array of submission objects, q.v. addSubmission
+    //   - is_complete: true if the chain has been completed
     this.getChainInfo = function(){
-        var chainInfo = {chainName: chainName, submissions: submissions};
+        var chainInfo = {
+            chainName: chainName,
+            submissions: submissions,
+            is_complete: this.isComplete()
+        };
         return chainInfo;
     };
 }

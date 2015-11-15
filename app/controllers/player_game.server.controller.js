@@ -87,6 +87,7 @@ exports.getInitialData = function(game_name, player_name) {
         player_name_list: game,
         player_name: player_name,
         player_has_finished: current_player === undefined ? undefined : current_player.has_finished,
+        game_has_finished: this.gameIsFinished(game_name)
     };
 
     if (initialData.game_has_started) {
@@ -108,4 +109,14 @@ exports.getInitialData = function(game_name, player_name) {
     }
 
     return initialData;
+};
+
+exports.gameIsFinished = function(game_name) {
+    var chains = sessionGameManager.getChainInfos(game_name);
+    for (var i = 0, chain; chain = chains[i++];) {
+        if (!chain.is_complete) {
+            return false;
+        }
+    }
+    return true;
 };

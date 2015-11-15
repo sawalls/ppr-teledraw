@@ -75,7 +75,8 @@ function GameManager()
             d_active_games[game_name] = 
             {
                 player_list : [],
-                has_started : false
+                has_started : false,
+                reveal_started : false
             };
             return 0;
         }
@@ -326,5 +327,53 @@ function GameManager()
         var player = player_list[findPlayerIndex(player_list, player_name)];
         return player.mailbox.getAllItems();
     };
+
+    this.start_reveal = function(game_name)
+    {
+        var game = d_active_games[game_name];
+        game.reveal_started = true;
+        game.reveal_info = {
+            player_index: 0,
+            submission_index: 0
+        }
+    };
+
+    this.next_reveal = function(game_name)
+    {
+        var game = d_active_games[game_name];
+        if (!game.reveal_started) {
+            console.log('Tried to get next reveal on game "' + game_name +
+                        '", but the reveal hasn\'t started on that game!');
+            return undefined;
+        }
+        if (reveal_info.player_index === game.player_list.length) {
+            //Reveal is over.
+            //TODO return something other than undefined
+            var reveal_info = {
+                'reveal_over': true
+            };
+        }
+        var mailbox = game.player_list[player_index].mailbox.getAllItems();
+        if (mailbox.length !== 1) {
+            console.log('Assertion failed! In the reveal, a player had a ' +
+                        'mailbox with non-1 length.');
+        }
+        var chain = mailbox[0].getChainInfo();
+        var chain_name = chain.chainName;
+        var submission = chain.submissions[submission_index];
+        var reveal_info = {
+            'chain_name': chain_name,
+            'submission': submission
+        };
+
+        var reveal_info = game.reveal_info;
+        reveal_info.submission_index++;
+        if (reveal_info.submission_index === game.player_list.length) {
+            reveal_info.submission_index = 0;
+            reveal_info.player_index++;
+        }
+
+        return reveal_info;
+    }
 }
 
