@@ -91,21 +91,50 @@ exports.getInitialData = function(game_name, player_name) {
     };
 
     if (initialData.game_has_started) {
-        var mailbox = sessionGameManager.get_mailbox(game_name, player_name);
-        var client_mailbox = [];
-
-        for (var i = 0, chain; chain = mailbox[i++];) {
-            var client_chain = {};
-            client_chain.chainName = chain.getName();
-
-            var last_submission = chain.getLastSubmission();
-            if (last_submission !== undefined) {
-                client_chain.submission = last_submission.content;
+        if(initialData.game_has_finished)
+        {
+            //If the reveal has started, we need to get the reveal status
+            var reveal_info = sessionGameManager.get_reveal_state(game_name);
+            if(reveal_info === undefined){
+                //Reveal hasn't started
+                return initialData;
             }
-            client_mailbox.push(client_chain);
+            //If the game is over, we return nothing
+            if(reveal_info.player_index >= initialData.player_name_list.length){
+                //The reveal is over
+                return initialData;
+            }
+            //If we aren't on the first prompt, return the previous one as well
+            if(reveal_info.submission_index !== 0)
+            {
+                initialData.previous_reveal = 
+                    sessionGameManager.get_reveal_info(game_name,
+                            reveal_info.player_index,
+                            reveal_info.submission_index - 1);
+            }
+            initialData.current_reveal = 
+                sessionGameManager.get_reveal_info(game_name,
+                        reveal_info.player_index,
+                        reveal_info.submission_index);
         }
+        else
+        {
+            var mailbox = sessionGameManager.get_mailbox(game_name, player_name);
+            var client_mailbox = [];
 
-        initialData.mailbox = client_mailbox;
+            for (var i = 0, chain; chain = mailbox[i++];) {
+                var client_chain = {};
+                client_chain.chainName = chain.getName();
+
+                var last_submission = chain.getLastSubmission();
+                if (last_submission !== undefined) {
+                    client_chain.submission = last_submission.content;
+                }
+                client_mailbox.push(client_chain);
+            }
+
+            initialData.mailbox = client_mailbox;
+        }
     }
 
     return initialData;
@@ -119,4 +148,40 @@ exports.gameIsFinished = function(game_name) {
         }
     }
     return true;
+};
+
+exports.start_reveal = function(game_name){
+    if(exports.gameIsFinished(game_name)){
+        sessionGameManager.start_reveal(game_name);
+        var reveal_info = sessionGameManager.get_reveal_info(game_name, 0, 0);
+        reveal_info.first_sub_in_chain = true;
+        return reveal_info;
+    }
+    else{
+        return undefined;
+    }
+};
+
+exports.increment_reveal = function(game_name){
+    sessionGameManager.increment_reveal(game_name);
+    var reveal_state = sessionGameManager.get_reveal_state(game_name);
+    if(reveal_state === undefined){
+        console.log("Tried to get reveal state for game: " + game_name +" but it's not available");
+        return undefined;
+    }
+    else{
+        if(reveal_state.reveal_is_finished){
+            return {reveal_is_finished : true}
+        }
+        var reveal_info = sessionGameManager.get_reveal_info(game_name, 
+                reveal_state.player_index, 
+                reveal_state.submission_index);
+        if(reveal_state.submission_index === 0){
+            reveal_info.first_sub_in_chain = true;
+        }
+        else{
+            reveal_info.first_sub_in_chain = false;
+        }
+        return reveal_info;
+    }
 };

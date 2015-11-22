@@ -213,11 +213,57 @@ socket.on("player_finished", function(data) {
     render_player_finished();
 });
 
+socket.on("reveal_started", function(data){
+    console.log("RECEIVED REVEAL STARTED");
+    $("#gameplayStuff").hide();
+    $("#revealStuff").show();
+    if(!g_player_is_first){
+        $("#advanceRevealBtn").hide();
+    }
+});
+
+socket.on("reveal_info_retrieved", function(data){
+    console.log("retrieved reveal info: " + JSON.stringify(data));
+    if(data.reveal_is_finished){
+        $("#advanceRevealBtn").hide();
+        $("#previousItem").hide();
+        $("#currentItem").hide();
+        $("#endMessage").show();
+        return;
+    }
+    author = data.submission.author;
+    content = data.submission.content;
+    if(data.first_sub_in_chain){
+        console.log("It's the first submission in the chain!");
+        $("#previousItem").empty(); //Removes all children
+        $("#currentItem").html("<p>" + author + ": " + content +"</p>");
+    }
+    else{
+        console.log("It's NOT the first sub!");
+        //Move the current item to the previous item
+        $("#previousItem").html($("#currentItem").html());
+        //Set new current item
+        if(content.match(/\.jpg\b|\.png\b|\.gif\b/g)){
+            console.log("Revealing a picture");
+            $("#currentItem").html("<p>"+author+":</p><img src=" + clue + " alt=" + clue + ">");
+        }
+        else{
+            console.log("Revealing text");
+            $("#currentItem").html("<p>" + author + ": " + content +"</p>");
+        }
+
+    }
+});
+
 $(function(){
     console.log("Top-level jQuery function started");
 
     $("#createGameBtn").click(function() {createGame();});
     $("#submitBtn").click(function() {submitClue();});
+    $("#advanceRevealBtn").click(function(){
+        console.log("Advancing the reveal for game: " + g_game_name);
+        socket.emit("increment_reveal", {gameName : g_game_name});
+    });
 
     socket.emit('initializeRequest', {});
 });

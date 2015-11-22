@@ -86,6 +86,21 @@ module.exports = function(app, io){
                 });
             }
         });
+        socket.on("reveal_started", function(data){
+            console.log("Reveal started for game: " + data.gameName);
+            var reveal_info = player_game.start_reveal(data.gameName);
+            if(reveal_info !== undefined){
+                io.to(data.gameName).emit("reveal_started", {});
+                io.to(data.gameName).emit("reveal_info_retrieved", reveal_info);
+            }
+            else{
+                console.log("Error trying to start reveal for game: " + data.gameName);
+            }
+        });
+        socket.on("increment_reveal", function(data){
+            var reveal_info = player_game.increment_reveal(data.gameName);
+            io.to(data.gameName).emit("reveal_info_retrieved", reveal_info);
+        });
     });
 
     app.get('/', player_game.renderEntryPage);

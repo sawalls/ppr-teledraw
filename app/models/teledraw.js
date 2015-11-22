@@ -328,52 +328,65 @@ function GameManager()
         return player.mailbox.getAllItems();
     };
 
-    this.start_reveal = function(game_name)
-    {
-        var game = d_active_games[game_name];
-        game.reveal_started = true;
-        game.reveal_info = {
-            player_index: 0,
-            submission_index: 0
-        }
-    };
-
-    this.next_reveal = function(game_name)
-    {
+    this.get_reveal_info = function(game_name, player_index, submission_index){
         var game = d_active_games[game_name];
         if (!game.reveal_started) {
             console.log('Tried to get next reveal on game "' + game_name +
                         '", but the reveal hasn\'t started on that game!');
             return undefined;
         }
-        if (reveal_info.player_index === game.player_list.length) {
+        if (game.reveal_state.player_index === game.player_list.length) {
             //Reveal is over.
             //TODO return something other than undefined
-            var reveal_info = {
-                'reveal_over': true
-            };
+            return {'reveal_over': true};
         }
         var mailbox = game.player_list[player_index].mailbox.getAllItems();
         if (mailbox.length !== 1) {
             console.log('Assertion failed! In the reveal, a player had a ' +
                         'mailbox with non-1 length.');
+            return undefined;
         }
         var chain = mailbox[0].getChainInfo();
         var chain_name = chain.chainName;
-        var submission = chain.submissions[submission_index];
-        var reveal_info = {
+        var submission = chain.submissions[game.reveal_state.submission_index];
+        return {
             'chain_name': chain_name,
             'submission': submission
         };
+    }
 
-        var reveal_info = game.reveal_info;
-        reveal_info.submission_index++;
-        if (reveal_info.submission_index === game.player_list.length) {
-            reveal_info.submission_index = 0;
-            reveal_info.player_index++;
+    this.start_reveal = function(game_name)
+    {
+        var game = d_active_games[game_name];
+        game.reveal_started = true;
+        game.reveal_state= {
+            player_index: 0,
+            submission_index: 0
         }
+    };
 
-        return reveal_info;
+    this.increment_reveal = function(game_name)
+    {
+        var game = d_active_games[game_name];
+        var reveal_state = game.reveal_state;
+        reveal_state.submission_index++;
+        if (reveal_state.submission_index === game.player_list.length) {
+            reveal_state.submission_index = 0;
+            reveal_state.player_index++;
+            if(reveal_state.player_index === game.player_list.length){
+                reveal_state.reveal_is_finished = true;
+            }
+        }
+    }
+
+    this.get_reveal_state = function(game_name)
+    {
+        var game = d_active_games[game_name];
+        if(!game.reveal_started)
+        {
+            return undefined;
+        }
+        return game.reveal_state;
     }
 }
 
