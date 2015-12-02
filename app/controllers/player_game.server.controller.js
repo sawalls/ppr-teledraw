@@ -81,13 +81,14 @@ exports.getInitialData = function(game_name, player_name) {
 
     var current_player = sessionGameManager.findPlayer(game_name, player_name);
 
+    var game_has_started = sessionGameManager.gameHasStarted(game_name);
     var initialData = {
         game_name: game_name,
-        game_has_started: sessionGameManager.gameHasStarted(game_name),
+        game_has_started: game_has_started,
         player_name_list: game,
         player_name: player_name,
         player_has_finished: current_player === undefined ? undefined : current_player.has_finished,
-        game_has_finished: this.gameIsFinished(game_name)
+        game_has_finished: game_has_started && this.gameIsFinished(game_name)
     };
 
     if (initialData.game_has_started) {

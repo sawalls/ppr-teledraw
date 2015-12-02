@@ -58,7 +58,7 @@ function renderLobby(gameName, playerList)
 
 function startGame(){
     console.log("Starting game " + g_game_name);
-    $("#startGameButtonContainer").hide();
+    $("#startGameButtonContainer").remove();
     socket.emit("gameStarted", {gameName: g_game_name});
 }
 
