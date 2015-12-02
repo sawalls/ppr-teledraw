@@ -245,7 +245,7 @@ socket.on("reveal_info_retrieved", function(data){
         //Set new current item
         if(content.match(/\.jpg\b|\.png\b|\.gif\b/g)){
             console.log("Revealing a picture");
-            $("#currentItem").html("<p>"+author+":</p><img src=" + clue + " alt=" + clue + ">");
+            $("#currentItem").html("<p>"+author+":</p><img src=" + content + " alt=" + content + ">");
         }
         else{
             console.log("Revealing text");
