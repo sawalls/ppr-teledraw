@@ -153,6 +153,7 @@ module.exports = function(app, io){
         }
     });
     app.get("/next_prompt", function(req, res) {
+	console.log("DBG: the session is: ", req.session);
         var game_name = req.session.game_name;
         if(!player_game.gameHasStarted(game_name)){
             res.render("lobby", {player_is_first : req.session.player_is_first, 
