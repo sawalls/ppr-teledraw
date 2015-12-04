@@ -33,7 +33,7 @@ function GameManager()
     var d_active_games = {};//Key value pair gameId to game
     
     //Helper functions
-    function findPlayer(player_list, name)
+    function findPlayerIndex(player_list, name)
     {
         for(i = 0, len = player_list.length; i < len; i++)
         {
@@ -47,6 +47,27 @@ function GameManager()
     }
 
     //Public Interface
+    this.findPlayer = function (game_name, player_name)
+    {
+        var game = d_active_games[game_name];
+        if(game === undefined)
+        {
+            console.log("Couldn't find game named: " + game_name);
+            return undefined;
+        }
+        var player_index = findPlayerIndex(game.player_list, player_name);
+        if(player_index === undefined)
+        {
+            console.log("Couldn't find player named " + player_name +
+                        " in game named: " + game_name);
+            return undefined;
+        }
+        else
+        {
+            return game.player_list[player_index];
+        }
+    }
+
     this.createGame = function(game_name, password)
     {
         if(d_active_games[game_name] === undefined)
@@ -54,7 +75,8 @@ function GameManager()
             d_active_games[game_name] = 
             {
                 player_list : [],
-                has_started : false
+                has_started : false,
+                reveal_started : false
             };
             return 0;
         }
@@ -72,7 +94,7 @@ function GameManager()
         }
         else
         {
-            if(findPlayer(d_active_games[game_name].player_list, player_name) !== undefined)
+            if(findPlayerIndex(d_active_games[game_name].player_list, player_name) !== undefined)
             {
                 return {rc : ADD_PLAYER_ERRORS.PLAYER_NAME_IN_USE};
             }
@@ -120,7 +142,7 @@ function GameManager()
             retObj.rc = SUBMISSION_ERRORS.CANNOT_FIND_GAME_BY_NAME;
             return retObj;
         }
-        var player_index = findPlayer(game.player_list, player_name);
+        var player_index = findPlayerIndex(game.player_list, player_name);
         if(player_index === undefined)
         {
             retObj.rc = SUBMISSION_ERRORS.CANNOT_FIND_PLAYER_NAME;
@@ -132,7 +154,7 @@ function GameManager()
             if(current_player.mailbox.isEmpty())
             {
                 console.log("Player " + player_name + " submitted to chain "
-                        + chainName + "but there's no chain to submit to!");
+                        + submissionInfo.chainName + "but there's no chain to submit to!");
                 retObj.rc = SUBMISSION_ERRORS.MAILBOX_IS_EMPTY;
                 return retObj;
             }
@@ -148,9 +170,12 @@ function GameManager()
             current_chain.addSubmission(player_name, submission_info.submission);
             if(current_chain.isComplete()){
                 retObj.chainCompleted= true;
+                current_player.has_finished = true;
             }
             next_player = game.player_list[(player_index + 1)%game.player_list.length];
             next_player.mailbox.addItem(current_chain);
+            retObj.recievingPlayer = next_player.name;
+            retObj.submissionInfo = submission_info;
             return retObj;
         }
     };
@@ -165,7 +190,7 @@ function GameManager()
             console.log("Cannot find game name " + game_name);
             return undefined;
         }
-        var player_index = findPlayer(game.player_list, player_name);
+        var player_index = findPlayerIndex(game.player_list, player_name);
         if(player_index === undefined)
         {
             console.log("Cannot find player name " + player_name);
@@ -207,14 +232,14 @@ function GameManager()
             console.log("Cannot find game name " + game_name);
             return undefined;
         }
-        var player_index = findPlayer(game.player_list, player_name);
+        var player_index = findPlayerIndex(game.player_list, player_name);
         if(player_index === undefined)
         {
             console.log("Cannot find player name " + player_name);
             return undefined;
         }
 
-        var player_index = findPlayer(game.player_list, player_name);
+        var player_index = findPlayerIndex(game.player_list, player_name);
         if(player_index === 0){
             return game.player_list[game.player_list.length - 1].name;
         }
@@ -294,5 +319,74 @@ function GameManager()
         }
         return chain_infos;
     };
+
+    this.get_mailbox = function(game_name, player_name)
+    {
+        var game = d_active_games[game_name];
+        var player_list = game.player_list;
+        var player = player_list[findPlayerIndex(player_list, player_name)];
+        return player.mailbox.getAllItems();
+    };
+
+    this.get_reveal_info = function(game_name, player_index, submission_index){
+        var game = d_active_games[game_name];
+        if (!game.reveal_started) {
+            console.log('Tried to get next reveal on game "' + game_name +
+                        '", but the reveal hasn\'t started on that game!');
+            return undefined;
+        }
+        if (game.reveal_state.player_index === game.player_list.length) {
+            //Reveal is over.
+            //TODO return something other than undefined
+            return {'reveal_over': true};
+        }
+        var mailbox = game.player_list[player_index].mailbox.getAllItems();
+        if (mailbox.length !== 1) {
+            console.log('Assertion failed! In the reveal, a player had a ' +
+                        'mailbox with non-1 length.');
+            return undefined;
+        }
+        var chain = mailbox[0].getChainInfo();
+        var chain_name = chain.chainName;
+        var submission = chain.submissions[game.reveal_state.submission_index];
+        return {
+            'chain_name': chain_name,
+            'submission': submission
+        };
+    }
+
+    this.start_reveal = function(game_name)
+    {
+        var game = d_active_games[game_name];
+        game.reveal_started = true;
+        game.reveal_state= {
+            player_index: 0,
+            submission_index: 0
+        }
+    };
+
+    this.increment_reveal = function(game_name)
+    {
+        var game = d_active_games[game_name];
+        var reveal_state = game.reveal_state;
+        reveal_state.submission_index++;
+        if (reveal_state.submission_index === game.player_list.length) {
+            reveal_state.submission_index = 0;
+            reveal_state.player_index++;
+            if(reveal_state.player_index === game.player_list.length){
+                reveal_state.reveal_is_finished = true;
+            }
+        }
+    }
+
+    this.get_reveal_state = function(game_name)
+    {
+        var game = d_active_games[game_name];
+        if(!game.reveal_started)
+        {
+            return undefined;
+        }
+        return game.reveal_state;
+    }
 }
 

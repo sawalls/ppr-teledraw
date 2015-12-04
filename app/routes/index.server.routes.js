@@ -1,6 +1,108 @@
-module.exports = function(app){
-    var index = require("../controllers/index.server.controller.js");
+function get_initial_data(session) {
+	
+};
+
+module.exports = function(app, io){
+
     var player_game = require("../controllers/player_game.server.controller.js");
+
+    io.sockets.on("connection", function(socket){
+        console.log("Connection made to the socket server from " + socket.request.connection.remoteAddress + "!");
+        console.log("Session: ", socket.handshake.session);
+
+        socket.on("initializeRequest", function(data) {
+            var initial_data = player_game.getInitialData(
+                                    socket.handshake.session.gameName,
+                                    socket.handshake.session.player_name);
+            console.log("INITIAL DATA:");
+            console.log(JSON.stringify(initial_data));
+            socket.emit("initializeResponse", initial_data);
+            if (initial_data !== undefined) {
+                console.log("Had someone rejoin the room: " + initial_data.game_name);
+                socket.join(initial_data.game_name);
+            }
+        });
+
+        socket.on("gameCreated", function(data){
+            console.log("Client created game: " + data.gameName);
+            var gameName = data.gameName;
+            var player_name = data.playerName;
+            console.log(gameName);
+            console.log(player_name);
+            var obj = player_game.processNewPlayerGameInfo(gameName, player_name);
+            var rc = obj.rc;
+            //TODO: Do something when these return codes appear
+            if(rc === 1){
+                //Cannot find game and failed to create
+            }
+            else if(rc === 2){
+                //Player name in use
+                socket.emit("warning", 
+                        {msg : "Player name " + player_name + " is already in use"});
+                return;
+            }
+            if(obj.playerIsFirst) //Player created the game
+            {
+                socket.broadcast.emit("addGame", data);
+            }
+            var player_list = player_game.getAllPlayerNamesInGame(gameName);
+            socket.emit("joinedGame", {
+                gameName : gameName,
+                playerList : player_list,
+                playerIsFirst : player_list[0] === player_name
+            });
+            io.to(gameName).emit("otherPlayerJoinedGame", {player_name : player_name});
+            console.log("Joined the room: " + gameName);
+            socket.join(gameName);
+            socket.handshake.session.gameName = gameName;
+            socket.handshake.session.player_name = player_name;
+            socket.handshake.session.playerIsFirst = obj.playerIsFirst;
+            socket.handshake.session.save();
+        });
+        socket.on("gameStarted", function(data){
+            player_game.startGame(data.gameName);
+            io.to(data.gameName).emit("gameStarted", {});
+        });
+        socket.on("clueSubmitted", function(data){
+            console.log("Game: " + data.gameName + " Player: " 
+                    + data.playerName + " Clue: " + data.clue);
+            var retObj = player_game.submitEntry(data.gameName, data.playerName, data.submissionInfo);
+            console.log("retObj: " + JSON.stringify(retObj));
+            if(retObj.rc){
+                console.log("submitEntry returned code: " + retObj.rc);
+                return;
+            }
+
+            if (retObj.chainCompleted){
+                socket.emit('player_finished', {});
+                if (player_game.gameIsFinished(data.gameName)) {
+                    io.to(data.gameName).emit("game_finished", {});
+                }
+                return;
+            } else {
+                io.to(data.gameName).emit("clueRecieved", {
+                    recievingPlayer : retObj.recievingPlayer,
+                    submissionInfo : retObj.submissionInfo
+                });
+            }
+        });
+        socket.on("reveal_started", function(data){
+            console.log("Reveal started for game: " + data.gameName);
+            var reveal_info = player_game.start_reveal(data.gameName);
+            if(reveal_info !== undefined){
+                io.to(data.gameName).emit("reveal_started", {});
+                io.to(data.gameName).emit("reveal_info_retrieved", reveal_info);
+            }
+            else{
+                console.log("Error trying to start reveal for game: " + data.gameName);
+            }
+        });
+        socket.on("increment_reveal", function(data){
+            var reveal_info = player_game.increment_reveal(data.gameName);
+            io.to(data.gameName).emit("reveal_info_retrieved", reveal_info);
+        });
+    });
+
     app.get('/', player_game.renderEntryPage);
     app.post("/my-handling-form-page", function(req, res){
         console.log("handling the post");
@@ -54,7 +156,8 @@ module.exports = function(app){
 	console.log("DBG: the session is: ", req.session);
         var game_name = req.session.game_name;
         if(!player_game.gameHasStarted(game_name)){
-            res.render("lobby", {player_is_first : req.session.player_is_first, playerNames : player_game.getAllPlayerNamesInGame(game_name) });
+            res.render("lobby", {player_is_first : req.session.player_is_first, 
+                playerNames : player_game.getAllPlayerNamesInGame(game_name) });
             return;
         }
         var player_name = req.session.player_name;

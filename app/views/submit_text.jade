@@ -4,6 +4,8 @@ html
         title
             | Game:
             = " " + game_name + ", Player: " + player_name
+        script(src="/socket.io/socket.io.js")
+        script(src="/clientJs/submitScreen.js")
     body
         h1
             | You are in game:

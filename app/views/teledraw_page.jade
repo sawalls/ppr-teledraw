@@ -1,0 +1,55 @@
+doctype html
+html
+    head
+        title Teledraw!
+        script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js')
+        script(src="/socket.io/socket.io.js")
+        script(src="clientJs/script.js")
+    body
+        div#gameListStuff(style="display: none;")
+            ol#gameList
+            - var printed_a_game = false
+            - for(var gameName in gameList)
+                if(!gameList.hasOwnProperty(gameName))
+                    -continue
+                li=gameName
+                -var printed_a_game = true
+                -var playerNames = gameList[gameName]
+                if(playerNames.length === 0)
+                    -continue
+                    h3 "Players"
+                    ul
+                        -for(var i = 0; i < playerNames.length; i += 1)
+                            li=playerNames[i]
+            if(printed_a_game === false)
+                p#noGamesNote No games currently going. Feel free to make your own!
+            h1 Join a game:
+            div#gameInfo
+                div#gameNameContainer
+                    label(for="gameNameInput") Game Name:
+                    input(type="text")#gameNameInput
+                div#playerNameContainer
+                    label(for="playerNameInput") Player Name:
+                    input(type="text")#playerNameInput
+                div#createGameButton.button
+                    button#createGameBtn Create Game
+
+        div#lobbyStuff(style="display: none;")
+            div#startGameButtonContainer.button
+            p#lobbyPlayerListHeading
+            div#playerListContainer
+                ul#playerList
+
+        div#gameplayStuff(style="display: none;")
+            div#mainEntryContainer
+                label(for="mainEntry") Entry:
+                input(type="text")#mainEntry
+                button#submitBtn Submit
+            div#clueContainer
+
+        div#revealStuff(style="display: none;")
+            button#advanceRevealBtn Next Entry
+            div#previousItem
+            div#currentItem
+            p#endMessage(style="display: none;") That's all, folks!
+
