@@ -6,6 +6,14 @@ html
         script(src="/socket.io/socket.io.js")
         script(src="clientJs/script.js")
     body
+        div#loginStuff
+            div#loginMessage
+                p Please Log In!
+            div#loginInputContainer
+                label(for="loginInput") Name:
+                input(type="text")#loginInput
+            div#loginButtonContainer
+                button#loginButton Log In
         div#gameListStuff(style="display: none;")
             ol#gameList
             - var printed_a_game = false
@@ -28,9 +36,6 @@ html
                 div#gameNameContainer
                     label(for="gameNameInput") Game Name:
                     input(type="text")#gameNameInput
-                div#playerNameContainer
-                    label(for="playerNameInput") Player Name:
-                    input(type="text")#playerNameInput
                 div#createGameButton.button
                     button#createGameBtn Create Game
 

@@ -15,29 +15,32 @@ var g_player_is_first = false;
 testFunc();
 
 
+function joinGameButtonHandlerCreator(gameName){
+    var joinGameClickHandler = function(){
+        socket.emit("joinGame", {gameName : gameName, playerName : g_player_name});
+    }
+}
+function joinGame(gameName){
+    socket.emit("joinGame", {gameName : gameName, playerName : g_player_name});
+}
+
 function addGameToList(gameName){
     console.log("Adding Game " + gameName);
-    $('#gameList').append('<li> ' + gameName + "</li>");
+    $('#gameList').append("<li>" + gameName + ""+
+            "<button onclick='joinGame(\""+gameName+"\")'>Join</button>" +
+            "</li>");
     $('#noGamesNote').remove();
 }
 
 function createGame(){
     var gameName = $('#gameNameInput').val();
     if(gameName == ""){
-        console.log("Empty game name!");
+        alert("Empty game name!");
         return;
     }
-    var playerName = $('#playerNameInput').val();
-    if(playerName === ""){
-        console.log("Empty player name!");
-        return;
-    }
-    g_player_name = playerName;
-    g_game_name = gameName;
-    g_mailbox.push({chainName : playerName + "'s chain"});
     socket.emit('gameCreated', 
             {gameName: gameName,
-             playerName : playerName});
+             playerName : g_player_name});
 }
 
 function renderLobby(gameName, playerList)
@@ -185,6 +188,8 @@ socket.on('addGame', function(data){
 
 socket.on("joinedGame", function(data){
     console.log("joinedGame: " + data);
+    g_game_name = data.gameName;
+    g_mailbox.push({chainName : g_player_name + "'s chain"});
     g_player_is_first = data.playerIsFirst;
     renderLobby(data.gameName, data.playerList);
 });
@@ -255,6 +260,28 @@ socket.on("reveal_info_retrieved", function(data){
     }
 });
 
+function login(){
+    console.log("Attempting to log in!");
+    var name = $("#loginInput").val();
+    if(name === ""){
+        alert("Must provide a name!");
+        return;
+    }
+    socket.emit("loginAttempted",{playerName : name});
+}
+
+socket.on("loginFailed", function(data){
+    console.log("Login Failed");
+    alert(data.errMsg);
+});
+
+socket.on("loginSucceeded", function(data){
+    console.log("Login Succeeded!");
+    g_player_name = data.playerName;
+    $("#loginStuff").hide();
+    $("#gameListStuff").show();
+});
+
 $(function(){
     console.log("Top-level jQuery function started");
 
@@ -264,6 +291,7 @@ $(function(){
         console.log("Advancing the reveal for game: " + g_game_name);
         socket.emit("increment_reveal", {gameName : g_game_name});
     });
+    $("#loginButton").click(login);
 
     socket.emit('initializeRequest', {});
 });

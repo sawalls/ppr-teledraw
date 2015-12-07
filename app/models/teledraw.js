@@ -4,6 +4,12 @@ module.exports = GameManager;
 var Chain = require('./teledraw_chain.js');
 var Mailbox = require('./teledraw_mailbox.js');
 
+const LOGIN_ERRORS = 
+{
+    EMPTY_PLAYER_NAME : 1,
+    PLAYER_NAME_IN_USE : 2
+};
+
 const GAME_CREATION_ERRORS =
 {
     GAME_NAME_IN_USE : 1,
@@ -31,6 +37,7 @@ const START_GAME_ERRORS =
 function GameManager()
 {
     var d_active_games = {};//Key value pair gameId to game
+    var d_active_players = {}; //Key value pair player name to status (currently connected, in game, etc.)
     
     //Helper functions
     function findPlayerIndex(player_list, name)
@@ -65,6 +72,32 @@ function GameManager()
         else
         {
             return game.player_list[player_index];
+        }
+    }
+
+    this.logIn = function(player_name)
+    {
+        //Check if the player name is empty
+        if(player_name === ""){
+            return LOGIN_ERRORS.EMPTY_PLAYER_NAME;
+        }
+        if(d_active_players[player_name] !== undefined){
+            return LOGIN_ERRORS.PLAYER_NAME_IN_USE;
+        }
+        else{
+            d_active_players[player_name] = 
+            {
+                connected : true,
+            };
+            return 0;
+        }
+    }
+
+    this.disconnectPlayer = function(player_name)
+    {
+        if(d_active_players[player_name] !== undefined)
+        {
+            d_active_players[player_name].connected = false;
         }
     }
 

@@ -10,6 +10,65 @@ exports.renderEntryPage = function(req, res){
     req.session.SCOTT_POINTS = 77;
 };
 
+exports.nameInUse = function(playerName){
+    var gameList = sessionGameManager.getGameList();
+    for(gameName in gameList)
+    {
+        playerList = gameList[gameName];
+        for(var i = 0, name; name = playerList[i++];)
+        {
+            if(playerName === name){
+                return true;
+            }
+        }
+    }
+    return false;
+};
+
+exports.logInPlayer = function(player_name){
+    var rc = sessionGameManager.logIn(player_name);
+    retObj = {rc: rc};
+    if(rc === 1){
+        retObj.errMsg = "Player name cannot be empty!";
+    }
+    else if(rc === 2){
+        retObj.errMsg = "Player name \""+ player_name+"\" already in use!";
+    }
+    return retObj;
+};
+
+exports.createAndJoinGame = function(game_name, player_name){
+    console.log("createAndJoinGame");
+    var rc = sessionGameManager.createGame(game_name);
+    console.log("Create Game rc: " + rc);
+    if(rc === 1){
+        console.log("Failed to create the game");
+        return {rc : rc, errMsg : "Game name \""+game_name+"\" already in use"};
+    }
+    retObj = sessionGameManager.addPlayerToGame(player_name, game_name);
+    if(retObj.rc === 1){//Should be impossible
+        console.log("Cannot find game: " + game_name); 
+        retObj.errMsg = "Unknown error occurred!";
+    }
+    else if(retObj.rc === 2){//Should be impossible
+        console.log("Player name " + player_name + " is in use");
+        retObj.errMsg = "Unknown error occurred!";
+    }
+    return retObj;
+};
+
+exports.joinGame = function(game_name, player_name){
+    var retObj = sessionGameManager.addPlayerToGame(player_name, game_name);
+    rc = retObj.rc;
+    if(rc === 1){//Should be impossible
+        retObj.errMsg = "Cannot find game \"" + game_name+"\""; 
+    }
+    else if(rc === 2){//Should be impossible
+        retObj.errMsg = "Player name \"" + player_name + "\" is in use";
+    }
+    return retObj;
+};
+
 exports.processNewPlayerGameInfo = function(gameName, playerName){
     var rc = sessionGameManager.createGame(gameName);
     var playerIsFirst = false;
