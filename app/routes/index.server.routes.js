@@ -12,12 +12,12 @@ module.exports = function(app, io){
 
         socket.on("initializeRequest", function(data) {
             var initial_data = player_game.getInitialData(
-                                    socket.handshake.session.gameName,
+                                    socket.handshake.session.game_name,
                                     socket.handshake.session.player_name);
             console.log("INITIAL DATA:");
             console.log(JSON.stringify(initial_data));
             socket.emit("initializeResponse", initial_data);
-            if (initial_data !== undefined) {
+            if (initial_data !== undefined && initial_data.game_name !== undefined) {
                 console.log("Had someone rejoin the room: " + initial_data.game_name);
                 socket.join(initial_data.game_name);
             }
@@ -31,6 +31,8 @@ module.exports = function(app, io){
                 socket.emit("loginFailed", retObj);
             }
             else{
+                socket.handshake.session.player_name = data.playerName;
+                socket.handshake.session.save();
                 socket.emit("loginSucceeded", {playerName : data.playerName});
             }
         });
@@ -63,7 +65,6 @@ module.exports = function(app, io){
             console.log("Joined the room: " + game_name);
             socket.join(game_name);
             socket.handshake.session.game_name = game_name;
-            socket.handshake.session.player_name = player_name;
             socket.handshake.session.playerIsFirst = true;
             socket.handshake.session.save();
         });

@@ -16,21 +16,7 @@ html
                 button#loginButton Log In
         div#gameListStuff(style="display: none;")
             ol#gameList
-            - var printed_a_game = false
-            - for(var gameName in gameList)
-                if(!gameList.hasOwnProperty(gameName))
-                    -continue
-                li=gameName
-                -var printed_a_game = true
-                -var playerNames = gameList[gameName]
-                if(playerNames.length === 0)
-                    -continue
-                    h3 "Players"
-                    ul
-                        -for(var i = 0; i < playerNames.length; i += 1)
-                            li=playerNames[i]
-            if(printed_a_game === false)
-                p#noGamesNote No games currently going. Feel free to make your own!
+            p#noGamesNote No games currently going. Feel free to make your own!
             h1 Join a game:
             div#gameInfo
                 div#gameNameContainer

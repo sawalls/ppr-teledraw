@@ -141,11 +141,20 @@ function start_reveal() {
 socket.on("initializeResponse", function(data) {
     console.log("initial_data: " + JSON.stringify(data));
     if (!data) {
-        //Draw the gameListStuff
-        $("#gameListStuff").show();
+        $("#loginStuff").show();
     } else {
-        g_game_name = data.game_name;
+        $("#loginStuff").hide();
         g_player_name = data.player_name;
+        if(data.game_name === undefined){
+            for(game in data.game_list)
+            {
+                addGameToList(game);
+                game_added = true;
+            }
+            $("#gameListStuff").show();
+            return;
+        }
+        g_game_name = data.game_name;
         g_game_has_started = data.game_has_started;
         g_game_has_finished = data.game_has_finished;
         if (g_game_has_started) {

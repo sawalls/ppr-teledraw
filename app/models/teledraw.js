@@ -101,6 +101,23 @@ function GameManager()
         }
     }
 
+    this.reconnectPlayer = function(player_name)
+    {
+        if(d_active_players[player_name] !== undefined){
+            d_active_players[player_name].connected = true;
+            return true;
+        }
+        return false;
+    }
+
+    this.checkPlayerLoginStatus = function(player_name)
+    {
+        if(d_active_players[player_name] === undefined){
+            return false;
+        }
+        return true;
+    }
+
     this.createGame = function(game_name, password)
     {
         if(d_active_games[game_name] === undefined)

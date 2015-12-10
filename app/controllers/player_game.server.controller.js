@@ -126,53 +126,59 @@ exports.getAllPlayerNamesInGame = function(game_name) {
 
 exports.getInitialData = function(game_name, player_name) {
     console.log('getInitialData called with: game_name: "' + JSON.stringify(game_name) + '", player_name: "' + JSON.stringify(player_name) + '"');
-    if (game_name === undefined) {
+    if(player_name === undefined || sessionGameManager.checkPlayerLoginStatus(player_name) === false){
         return undefined;
+    }
+    sessionGameManager.reconnectPlayer(player_name);
+    var initial_data = {
+        player_name: player_name,
+    };
+
+    if (game_name === undefined) {
+        initial_data.game_list = sessionGameManager.getGameList();
+        return initial_data;
     }
     var game_list = sessionGameManager.getGameList(game_name),
         game = game_list[game_name];
     if (!game) {
         console.log("ERROR: we got the game_name: '" + game_name +
                     "' from the session, but no such game exists!")
-        return undefined;
+        return initial_data;
     }
 
 
     var current_player = sessionGameManager.findPlayer(game_name, player_name);
 
     var game_has_started = sessionGameManager.gameHasStarted(game_name);
-    var initialData = {
-        game_name: game_name,
-        game_has_started: game_has_started,
-        player_name_list: game,
-        player_name: player_name,
-        player_has_finished: current_player === undefined ? undefined : current_player.has_finished,
-        game_has_finished: game_has_started && this.gameIsFinished(game_name)
-    };
+    initial_data.game_name = game_name;
+    initial_data.game_has_started = game_has_started;
+    initial_data.player_name_list = game;
+    initial_data.player_has_finished = current_player === undefined ? undefined : current_player.has_finished;
+    initial_data.game_has_finished = game_has_started && this.gameIsFinished(game_name);
 
-    if (initialData.game_has_started) {
-        if(initialData.game_has_finished)
+    if (initial_data.game_has_started) {
+        if(initial_data.game_has_finished)
         {
             //If the reveal has started, we need to get the reveal status
             var reveal_info = sessionGameManager.get_reveal_state(game_name);
             if(reveal_info === undefined){
                 //Reveal hasn't started
-                return initialData;
+                return initial_data;
             }
             //If the game is over, we return nothing
-            if(reveal_info.player_index >= initialData.player_name_list.length){
+            if(reveal_info.player_index >= initial_data.player_name_list.length){
                 //The reveal is over
-                return initialData;
+                return initial_data;
             }
             //If we aren't on the first prompt, return the previous one as well
             if(reveal_info.submission_index !== 0)
             {
-                initialData.previous_reveal = 
+                initial_data.previous_reveal = 
                     sessionGameManager.get_reveal_info(game_name,
                             reveal_info.player_index,
                             reveal_info.submission_index - 1);
             }
-            initialData.current_reveal = 
+            initial_data.current_reveal = 
                 sessionGameManager.get_reveal_info(game_name,
                         reveal_info.player_index,
                         reveal_info.submission_index);
@@ -193,11 +199,11 @@ exports.getInitialData = function(game_name, player_name) {
                 client_mailbox.push(client_chain);
             }
 
-            initialData.mailbox = client_mailbox;
+            initial_data.mailbox = client_mailbox;
         }
     }
 
-    return initialData;
+    return initial_data;
 };
 
 exports.gameIsFinished = function(game_name) {
